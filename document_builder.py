@@ -4,7 +4,6 @@ import json
 import os
 import numpy as np
 
-
 class RandomDocumentBuilder:
     def __init__(self, charts_path, document_path=None, blank_pages=None, output_path='.', min_side=0.1, seed=113):
         if document_path is None:
@@ -84,7 +83,8 @@ class RandomDocumentBuilder:
 
                 if doc_no is not None and i >= doc_no:
                     break
-
+                doc.close()
+                doc = fitz.open(self.document_path)
         finally:
             doc.close()
             with open(os.path.join(self.results_dir, 'annotations.json'), 'w') as fp:
@@ -92,5 +92,5 @@ class RandomDocumentBuilder:
 
 
 if __name__ == '__main__':
-    doc_builder = RandomDocumentBuilder('../sample_train1/png')
+    doc_builder = RandomDocumentBuilder('./AreaGraph')
     doc_builder.generate(doc_no=10)
