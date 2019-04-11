@@ -30,8 +30,8 @@ class FRCNNFileTransformer:
                                               width,
                                               height,
                                               int(annotation[file_name][0] * width),
-                                              int(annotation[file_name][2] * width),
                                               int(annotation[file_name][1] * height),
+                                              int(annotation[file_name][2] * width),
                                               int(annotation[file_name][3] * height),
                                               os.path.join(self.xml_output_path,
                                                            path + "_" + file_name.split('.')[0] + '.xml'))
