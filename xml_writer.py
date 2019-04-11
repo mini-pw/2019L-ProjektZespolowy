@@ -43,30 +43,3 @@ if __name__ == '__main__':
     XMLWriter().create_faster_rcnn_xml('000001.png', 'GeneratedData_Train', '/my/path/GeneratedData_Train/000001.png',
                                        224, 224, 82, 172, 88, 146, 'out.xml', 21)
 
-# <annotation>
-# 	<folder>GeneratedData_Train</folder>
-# 	<filename>000001.png</filename>
-# 	<path>/my/path/GeneratedData_Train/000001.png</path>
-# 	<source>
-# 		<database>Unknown</database>
-# 	</source>
-# 	<size>
-# 		<width>224</width>
-# 		<height>224</height>
-# 		<depth>3</depth>
-# 	</size>
-# 	<segmented>0</segmented>
-# 	<object>
-# 		<name>21</name>
-# 		<pose>Frontal</pose>
-# 		<truncated>0</truncated>
-# 		<difficult>0</difficult>
-# 		<occluded>0</occluded>
-# 		<bndbox>
-# 			<xmin>82</xmin>
-# 			<xmax>172</xmax>
-# 			<ymin>88</ymin>
-# 			<ymax>146</ymax>
-# 		</bndbox>
-# 	</object>
-# </annotation>
