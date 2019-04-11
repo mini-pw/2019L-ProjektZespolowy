@@ -4,6 +4,7 @@ import json
 import os
 import numpy as np
 
+
 class RandomDocumentBuilder:
     def __init__(self, charts_path, document_path=None, blank_pages=None, output_path='.', min_side=0.1, seed=113):
         if document_path is None:
