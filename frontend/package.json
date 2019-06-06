@@ -1,0 +1,43 @@
+{
+  "name": "annotations",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@date-io/date-fns": "^1.3.6",
+    "@material-ui/core": "^4.0.2",
+    "@material-ui/icons": "^3.0.2",
+    "@material-ui/pickers": "^3.1.0",
+    "add": "^2.0.6",
+    "date-fns": "^2.0.0-alpha.27",
+    "konva": "^3.2.4",
+    "lodash": "^4.17.11",
+    "react": "^16.8.6",
+    "react-contexify": "^4.0.2",
+    "react-dom": "^16.8.6",
+    "react-infinite-scroller": "^1.2.4",
+    "react-konva": "^16.8.6",
+    "react-popup": "^0.10.0",
+    "react-router-dom": "^5.0.0",
+    "react-scripts": "2.1.8",
+    "react-tag-autocomplete": "^6.0.0-beta.1",
+    "react-toastify": "^5.1.0",
+    "react-tooltip": "^3.10.0",
+    "use-image": "^1.0.3",
+    "yarn": "^1.15.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "echo 'No tests lol'",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}
