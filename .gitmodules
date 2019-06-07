@@ -1,0 +1,3 @@
+[submodule "ChaTa-Compare"]
+	path = compare
+	url = https://github.com/ptrhlm/ChaTa-Compare
