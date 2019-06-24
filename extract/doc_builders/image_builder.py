@@ -5,10 +5,9 @@ import fitz
 from PIL import Image
 import io
 import json
-import random
 
 
-class FromImageDocumentBuilder:
+class ImageDocumentBuilder:
 
     def __init__(self, article_names, plots_dir, pages_to_skip, number_of_docs, output_dir):
         self.plots_dir = plots_dir
@@ -95,17 +94,3 @@ class FromImageDocumentBuilder:
                 image_data['doc'].close()
             except ValueError:
                 pass
-
-
-if __name__ == '__main__':
-    articles = ['article.pdf', 'art2.pdf', 'art1.pdf', 'art3.pdf', 'art4.pdf', 'art5.pdf', 'art6.pdf', 'art7.pdf']
-    articles = [os.path.join('sample_articles2', article) for article in articles]
-    plots_data = ['./charts/A_nochart', './charts/BarChart', './charts/BoxChart', './charts/LineChart',
-                  './charts/PieChart', './charts/ScatterChart', './charts/X_others']
-    for plots in plots_data:
-        builder = FromImageDocumentBuilder(articles,
-                                           plots,
-                                           [[3, 12, 13, 22]+list(range(23, 44)), [], [], [0], [], [2, 3, 27, 30, 35, 36, 37, 40, 42], [2], [11]],
-                                           3000, f'./documents_img/{plots.split("/")[-1]}/results')
-        builder.generate()
-        builder.close_docs()

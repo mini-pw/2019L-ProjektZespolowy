@@ -8,7 +8,7 @@ import numpy as np
 class RandomDocumentBuilder:
     def __init__(self, charts_path, document_path=None, blank_pages=None, output_path='.', min_side=0.1, seed=113):
         if document_path is None:
-            self.document_path = 'article.pdf'
+            self.document_path = 'nonblank_articles/article.pdf'
             self.blank_pages = [0, 1, 2, 4, 5, 9, 14, 15, 17, 19, 20, 21]
         else:
             self.document_path = document_path

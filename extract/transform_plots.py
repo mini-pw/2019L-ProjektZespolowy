@@ -1,11 +1,14 @@
 import json
-from xml_writer import XMLWriter
+from utils.xml_writer import XMLWriter
 import os
 import glob
 from PIL import Image
 
 
 class FRCNNFileTransformer:
+    """
+    The class generates Pascal VOC format data from the generated one
+    """
     def __init__(self, plot_paths, classes, plot_output_path, xml_output_path, ):
         self.classes = classes
         self.plot_paths = plot_paths
@@ -42,13 +45,13 @@ class FRCNNFileTransformer:
 
 
 if __name__ == '__main__':
-    FRCNNFileTransformer([os.path.join('documents', folder) for folder in os.listdir('documents')],
+    FRCNNFileTransformer([os.path.join('blank_documents', folder) for folder in os.listdir('blank_documents')],
                          [0, 0, 0, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7],
                          './png',
                          'xmls'
                          ).extract_images()
 
-    FRCNNFileTransformer([os.path.join('documents_img', folder) for folder in os.listdir('documents_img')],
+    FRCNNFileTransformer([os.path.join('image_documents', folder) for folder in os.listdir('image_documents')],
                          [0, 2, 3, 4, 5, 6, 7],
                          './png',
                          'xmls'
