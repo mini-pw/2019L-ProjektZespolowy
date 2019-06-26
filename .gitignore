@@ -1,4 +1,11 @@
-
 \.idea/
 
 results/
+
+png/
+
+xmls/
+
+__pycache__/
+
+charts/
