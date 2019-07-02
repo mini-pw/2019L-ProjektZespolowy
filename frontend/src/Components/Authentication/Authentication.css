@@ -1,0 +1,43 @@
+.login-popup {
+    position: absolute;
+    background: white;
+    box-shadow: 4px 7px 18px 0px rgba(0,0,0,0.5);
+    width: 200px;
+    right: 30px;
+}
+.login-popup:after, .login-popup:before {
+    bottom: 100%;
+    left: 85%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+.login-popup:after {
+    border-color: rgba(136, 183, 213, 0);
+    border-bottom-color: white;
+    border-width: 10px;
+    margin-left: -4px;
+}
+.login-popup:before {
+    border-color: rgba(194, 225, 245, 0);
+    border-bottom-color: rgba(0,0,0,0.1);
+    border-width: 11px;
+    margin-left: -5px;
+}
+
+.form-field {
+    display: flex;
+    justify-content: center;
+}
+
+.btn {
+    margin: 15px;
+}
+
+.side {
+    float: left;
+ }
