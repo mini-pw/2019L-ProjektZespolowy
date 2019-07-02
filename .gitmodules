@@ -1,3 +1,9 @@
+
+[submodule "ChaTa-Compare"]
+	path = compare
+	url = https://github.com/ptrhlm/ChaTa-Compare
+
 [submodule "annotations_be"]
 	path = annotations_be
 	url = git://github.com/gutowskid/annotations_be.git
+
