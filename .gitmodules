@@ -1,0 +1,3 @@
+[submodule "annotations_be"]
+	path = annotations_be
+	url = git://github.com/gutowskid/annotations_be.git
