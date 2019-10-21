@@ -23,7 +23,7 @@
     "react-toastify": "^5.1.0",
     "react-tooltip": "^3.10.0",
     "use-image": "^1.0.3",
-    "yarn": "^1.15.2"
+    "yarn": "^1.17.3"
   },
   "scripts": {
     "start": "react-scripts start",
