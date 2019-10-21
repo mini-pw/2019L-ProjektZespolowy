@@ -10,7 +10,7 @@
     "add": "^2.0.6",
     "date-fns": "^2.0.0-alpha.27",
     "konva": "^3.2.4",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.13",
     "react": "^16.8.6",
     "react-contexify": "^4.0.2",
     "react-dom": "^16.8.6",
