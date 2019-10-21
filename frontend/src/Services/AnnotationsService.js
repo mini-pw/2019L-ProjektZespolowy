@@ -1,7 +1,7 @@
 import {fetchBody} from '../utils';
 import {availableTags, groupBy} from '../common';
 
-const apiUrl = 'http://annotations.mini.pw.edu.pl/api/annotations';
+const apiUrl = 'http://localhost:8081/api/annotations';//'http://annotations.mini.pw.edu.pl/api/annotations';
 
 export default class AnnotationsService {
   constructor(authService, annotationsControllerService) {
@@ -61,6 +61,9 @@ export default class AnnotationsService {
     await this.authService.ensureLoggedIn();
     const updatedAnnotations = annotations
       .map((a) => ({annotation: a.data, pageId, annotationsUsed: [], tags: a.tags.map(t => t.value)}));
+    if(annotations.length == 0){ //delete all annotations for page
+      updatedAnnotations.push({annotation: null, pageId, annotationsUsed: null, tags: null});
+    }
     const res = await fetch(`${apiUrl}/annotations/new`, {
       method: 'POST',
       body: JSON.stringify(updatedAnnotations),
