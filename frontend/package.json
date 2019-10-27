@@ -12,7 +12,7 @@
     "date-fns": "^2.0.0-alpha.27",
     "jest-react-native": "^18.0.0",
     "konva": "^3.2.4",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.13",
     "react": "^16.8.6",
     "react-contexify": "^4.0.2",
     "react-dom": "^16.8.6",
@@ -25,7 +25,7 @@
     "react-toastify": "^5.1.0",
     "react-tooltip": "^3.10.0",
     "use-image": "^1.0.3",
-    "yarn": "^1.15.2"
+    "yarn": "^1.17.3"
   },
   "scripts": {
     "start": "react-scripts start",
