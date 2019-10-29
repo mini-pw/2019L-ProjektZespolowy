@@ -4,11 +4,10 @@ services:
   app:
     build: .
     command: ./entrypoint.sh
-    ports:
-      - "8000:8000"
     depends_on:
       - db
       - rabbitmq
+    restart: always
     environment:
       - PYTHONUNBUFFERED=1
       - DATABASE_URL=psql://postgres:postgres@db/postgres
@@ -22,6 +21,7 @@ services:
     depends_on:
       - db
       - rabbitmq
+    restart: always
     environment:
       - PYTHONUNBUFFERED=1
       - DATABASE_URL=psql://postgres:postgres@db/postgres
@@ -31,11 +31,20 @@ services:
       - "./media:/var/media"
   rabbitmq:
     image: rabbitmq
+    restart: always
   db:
     image: postgres
+    restart: always
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     volumes:
       - "./db:/var/lib/postgresql/data"
+  nginx:
+    image: "nginx:stable"
+    volumes:
+      - "./media:/var/media"
+      - "./nginx:/etc/nginx:ro"
+    ports:
+      - "80:80"
