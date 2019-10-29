@@ -29,6 +29,3 @@ urlpatterns = [
     path('api/', include(api_urls)),
     path('docs/', include_docs_urls(title='My API title')),
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
