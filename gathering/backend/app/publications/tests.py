@@ -84,7 +84,7 @@ def test_annotations_used(user, user_client):
     user.save()
 
     response = user_client.post(ANNOTATIONS_LIST_CREATE, [{
-        'page': a1.page_id, 'data': {}, 'annotations_used': [a1.id, a2.id]
+        'page': a1.page_id, 'data': {'{ data: "somedata" }'}, 'annotations_used': [a1.id, a2.id]
     }], format='json')
     assert response.status_code == status.HTTP_201_CREATED
     for a in (a1, a2, a3):
@@ -99,7 +99,7 @@ def test_annotation_tags(user_client):
     publication_2_page = mommy.make(Page, publication=publication_2)
     post_response = user_client.post(ANNOTATIONS_LIST_CREATE, [{
         'page': publication_2_page.id,
-        'data': {},
+        'data': '{ data: "somedata" }',
         'tags': ['a', 'b']
     }], format='json')
     assert post_response.status_code == status.HTTP_201_CREATED
@@ -119,3 +119,48 @@ def test_annotation_tags(user_client):
     get_response = user_client.get(ANNOTATIONS_LIST_CREATE, {'tags': 'a,b'})
     assert len(get_response.data['results']) == 1
     assert get_response.data['results'][0]['id'] == post_response.data[0]['id']
+
+def test_annotation_deleted(user_client):
+    publication = mommy.make(Publication)
+    publication_page = mommy.make(Page, publication=publication)
+
+    #first create
+    user_client.post(ANNOTATIONS_LIST_CREATE, [{
+        'page': publication_page.id,
+        'data': '{ data: "somedata" }',
+        'tags': ['a', 'b']
+    }], format='json')
+    get_response = user_client.get(ANNOTATIONS_LIST_CREATE, {'page_id': publication_page.id})
+    assert len(get_response.data['results']) == 1
+
+    #then delete
+    user_client.post(ANNOTATIONS_LIST_CREATE, [{
+        'page': publication_page.id,
+        'data': None,
+        'tags': None
+    }], format='json')
+    get_response = user_client.get(ANNOTATIONS_LIST_CREATE, {'page_id': publication_page.id})
+    assert len(get_response.data['results']) == 0
+
+def test_annotation_notDeleted_whenPageNrIsNotCorrect(user_client):
+    publication = mommy.make(Publication)
+    publication_page = mommy.make(Page, publication=publication, id=1)
+
+    #first create
+    user_client.post(ANNOTATIONS_LIST_CREATE, [{
+        'page': publication_page.id,
+        'data': '{ data: "somedata" }',
+        'tags': ['a', 'b']
+    }], format='json')
+    get_response = user_client.get(ANNOTATIONS_LIST_CREATE, {'page_id': publication_page.id})
+    assert len(get_response.data['results']) == 1
+
+    #then delete
+    user_client.post(ANNOTATIONS_LIST_CREATE, [{
+        'page': 2,
+        'data': None,
+        'tags': None
+    }], format='json')
+    get_response = user_client.get(ANNOTATIONS_LIST_CREATE, {'page_id': publication_page.id})
+    assert len(get_response.data['results']) == 1
+

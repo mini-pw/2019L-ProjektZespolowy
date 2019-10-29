@@ -69,6 +69,11 @@ class AnnotationListCreateView(ListCreateAPIView):
         if not request.data or not isinstance(request.data, Iterable):
             raise ValidationError("You must send non-empty list of annotations.")
         serializer = self.get_serializer(data=request.data, many=True)
+        if len(request.data)==1 and 'page' in request.data[0] and 'data' in request.data[0] and not request.data[0]['data']:
+            annotations_to_delete = Annotation.objects.filter(page=request.data[0]['page'])
+            annotations_to_delete.delete()
+            headers = self.get_success_headers(request.data)
+            return Response(request.data, status=status.HTTP_201_CREATED, headers=headers)
         serializer.is_valid(raise_exception=True)
         if len({item['page'] for item in serializer.validated_data}) > 1:
             raise ValidationError("All annotations must relate to the same page.")
