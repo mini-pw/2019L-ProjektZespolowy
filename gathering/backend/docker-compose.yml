@@ -48,3 +48,5 @@ services:
       - "./nginx:/etc/nginx:ro"
     ports:
       - "80:80"
+    depends_on:
+      - app
