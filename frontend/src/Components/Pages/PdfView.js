@@ -49,7 +49,7 @@ function PdfView(props) {
     if (!changesDetected) {
       window.addEventListener('beforeunload', windowsCloseEventHandler);
     }
-    setAnnotations(annotationsControllerService.annotations);
+    setAnnotations([...annotationsControllerService.annotations]);
     setChangesDetected(true);
   };
 

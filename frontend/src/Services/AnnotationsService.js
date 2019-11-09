@@ -60,7 +60,8 @@ export default class AnnotationsService {
   async saveChanges(annotations, pageId, pageIndex) {
     await this.authService.ensureLoggedIn();
     const updatedAnnotations = annotations
-      .map((a) => ({annotation: a.data, pageId, annotationsUsed: [], tags: a.tags.map(t => t.value)}));
+      .map((a) => (
+        {annotation: a.data, pageId, annotationsUsed: [], tags: a.tags.map(t => t.value)}));
     if(annotations.length == 0){ //delete all annotations for page
       updatedAnnotations.push({annotation: null, pageId, annotationsUsed: null, tags: null});
     }

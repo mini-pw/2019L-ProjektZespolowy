@@ -56,6 +56,7 @@ export default class PublicationsService {
       }),
       headers: this.headers
     });
+    list.forEach(el => el.imageUrl = el.imageUrl.replace("http", "https"));
     return list;
   }
 
@@ -88,6 +89,7 @@ export default class PublicationsService {
       headers: this.headers
     });
     if (list && list.length > 0) {
+      list[0].imageUrl = list[0].imageUrl.replace("http", "https");
       return list[0];
     }
     return '';
