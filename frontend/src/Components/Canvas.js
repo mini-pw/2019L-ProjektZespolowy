@@ -46,10 +46,10 @@ const MyMenu = ({annotations, onNewAdnotationClick, onConnectAnnotationClick, on
         currentAnnotation.data.subRegions = [];
       var size = getRegionSize(type, currentAnnotation.data, image);
       var newSubAnnotation = {
-          x1: size.x1,//(currentAnnotation.data.x1 + currentAnnotation.data.x2)/2,
-          x2: size.x2, //(currentAnnotation.data.x1 + currentAnnotation.data.x2)/2 + 50 / image.width,
-          y1: size.y1, //(currentAnnotation.data.y1 + currentAnnotation.data.y2)/2,
-          y2: size.y2,//(currentAnnotation.data.y1 + currentAnnotation.data.y2)/2 + 25 / image.height,
+          x1: size.x1,
+          x2: size.x2,
+          y1: size.y1,
+          y2: size.y2,
           type: [type],
           text: '',
           subRegions: []

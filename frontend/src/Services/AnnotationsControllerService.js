@@ -55,13 +55,13 @@ export default class AnnotationsControllerService {
 
   isAnnotationSelected(pageIndex, annotationIndex, subRegionIndex) {
     return this.selectedAnnotations.some((annotation) => annotation.pageIndex === pageIndex &&
-      annotation.annotationIndex === annotationIndex && (subRegionIndex == null || annotation.subRegionIndex === subRegionIndex));
+      annotation.annotationIndex === annotationIndex && annotation.subRegionIndex === subRegionIndex);
   }
 
   toggleAnnotationSelection(pageIndex, annotationIndex, subRegionIndex) {
     if (this.isAnnotationSelected(pageIndex, annotationIndex, subRegionIndex)) {
-      this.selectedAnnotations = this.selectedAnnotations.filter((annotation) => !(annotation.pageIndex === pageIndex &&
-        annotation.annotationIndex === annotationIndex) && (subRegionIndex == null || annotation.subRegionIndex === subRegionIndex));
+      this.selectedAnnotations = this.selectedAnnotations.filter((annotation) => 
+      !(annotation.pageIndex === pageIndex && annotation.annotationIndex === annotationIndex && annotation.subRegionIndex === subRegionIndex));
     } else {
       this.selectedAnnotations = [...this.selectedAnnotations, {pageIndex, annotationIndex, subRegionIndex}];
     }
@@ -124,9 +124,9 @@ export default class AnnotationsControllerService {
     for(var i=0; i<this.selectedAnnotations.length; i++){
       var selected = this.selectedAnnotations[i];
       if(selected.subRegionIndex == null)
-        updatedAnnotations[selected.pageIndex].splice(selected.annotationIndex, 1);//updatedAnnotations[selected.pageIndex] = updatedAnnotations[selected.pageIndex].filter((_, annotationIndex) => annotationIndex != selected.annotationIndex);
+        updatedAnnotations[selected.pageIndex].splice(selected.annotationIndex, 1);
       else
-        updatedAnnotations[selected.pageIndex][selected.annotationIndex].data.subRegions.splice(selected.subRegionIndex, 1);// = updatedAnnotations[selected.pageIndex][selected.annotationIndex].data.subRegions.filter((_, subRegionIndex) => subRegionIndex != selected.subRegionIndex);
+        updatedAnnotations[selected.pageIndex][selected.annotationIndex].data.subRegions.splice(selected.subRegionIndex, 1);
     }
     this.annotations = [...updatedAnnotations];
     this.selectedAnnotations = [];

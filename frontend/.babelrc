@@ -1,8 +1,22 @@
 {"env": {
 	"development": {
-		"plugins": ["transform-es2015-modules-commonjs"]
+		"presets": [
+			"@babel/preset-env",
+			"@babel/preset-react"
+		  ],
+		"plugins": [
+			"@babel/plugin-proposal-class-properties",
+			"transform-es2015-modules-commonjs"
+		]
 	},
 	"test": {
-		"plugins": ["transform-es2015-modules-commonjs"]
+		"presets": [
+			"@babel/preset-env",
+			"@babel/preset-react"
+		  ],
+		"plugins": [
+			"@babel/plugin-proposal-class-properties",
+			"transform-es2015-modules-commonjs"
+		]
 	}
 }}
