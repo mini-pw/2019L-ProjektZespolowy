@@ -44,7 +44,7 @@ class Page(models.Model):
     publication = models.ForeignKey('Publication', on_delete=models.CASCADE)
     number = models.PositiveSmallIntegerField()
     image = models.ImageField()
-    ocr = models.BinaryField(null=True)
+    ocr = JSONField(null=True)
 
     annotation_status = models.CharField(
         max_length=32, editable=False,
