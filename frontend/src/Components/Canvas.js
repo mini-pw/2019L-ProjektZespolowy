@@ -1,12 +1,15 @@
 import useImage from 'use-image';
 import {Stage} from 'react-konva';
 import {Item, Menu, MenuProvider, Submenu} from 'react-contexify';
-import React, {useContext, useState} from 'react';
+import React, {useContext, useState, useEffect} from 'react';
 import 'react-contexify/dist/ReactContexify.min.css';
 import DrawingCanvas from './DrawingCanvas';
 import * as PropTypes from 'prop-types';
 import ThreeDotsSpinner from './Common/ThreeDotsSpinner';
 import {ServiceContext} from '../Services/SeviceContext';
+import _debounce from 'lodash.debounce'
+import './Canvas.css';
+
 // import Helper from './Common/Helper';
 
 const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
@@ -153,8 +156,19 @@ MyCanvas.propTypes = {
 const WithMenu = ({annotations, image, scale, id, pageIndex, onScaleChange, onAnnotationsChange, showAnnotationsInfoModal}) => {
   const [offset, setOffset] = useState({x: 0, y: 0});
   const [selectedAnnotationsIndex, setSelectedAnnotationsIndex] = useState(null);
+  const [render, setRender] = useState([]);
   const {annotationsControllerService} = useContext(ServiceContext);
   const [downloadedImage] = useImage(image);
+
+  useEffect(() => {
+    const handleResize = _debounce(() => {
+      setRender([]);
+    }, 100);
+    setOffset({x: 0, y: 0});
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   if (!downloadedImage) {
     return <ThreeDotsSpinner/>;
   }
