@@ -18,13 +18,14 @@ class CustomUserAdmin(UserAdmin):
             'fields': ('username', 'password1', 'password2'),
         }),
     )
+    change_password_form = AdminPasswordChangeForm
     list_display = (
         'username', 'first_name', 'last_name', 'is_staff', 'is_superuser',
         'annotations_count', 'used_annotations_count'
     )
     list_filter = ('is_staff', 'is_superuser', 'groups')
     search_fields = ('username', 'first_name', 'last_name')
-
+    
     readonly_fields = ('username', 'annotations_count', 'used_annotations_count', 'last_login', 'date_joined')
 
     def annotations_count(self, user):
