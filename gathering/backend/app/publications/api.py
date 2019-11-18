@@ -10,8 +10,9 @@ from rest_framework.views import APIView
 
 from publications.filters import PublicationFilter, PageFilter, AnnotationFilter
 from publications.models import Publication, Page, Annotation
-from publications.serializers import PublicationSerializer, PageSerializer, AnnotationSerializer
+from publications.serializers import PublicationSerializer, PageSerializer, PageOcrSerializer, AnnotationSerializer
 from publications.tasks import save_file_locally
+from publications.pagination import SingleResultPagination
 
 
 class PublicationListView(ListAPIView):
@@ -100,3 +101,15 @@ class GlobalStatistics(APIView):
             "annotated_pages_count": Page.objects.filter(annotation__isnull=False).distinct().count(),
             "annotations_count": Annotation.objects.count()
         })
+
+
+class Ocr(ListAPIView):
+    queryset = Page.objects.all()
+    serializer_class = PageOcrSerializer
+    filterset_class = PageFilter
+    pagination_class = SingleResultPagination   # hard paging limit, OCR JSONs are very big
+
+
+class OcrTaskRequest(APIView):
+    def post(self, request, *args, **kwargs):
+        return Response([])
