@@ -11,7 +11,7 @@ from rest_framework.views import APIView
 from publications.filters import PublicationFilter, PageFilter, AnnotationFilter
 from publications.models import Publication, Page, Annotation
 from publications.serializers import PublicationSerializer, PageSerializer, PageOcrSerializer, AnnotationSerializer
-from publications.tasks import save_file_locally
+from publications.tasks import save_file_locally, perform_ocr
 from publications.pagination import SingleResultPagination
 
 
@@ -112,4 +112,9 @@ class Ocr(ListAPIView):
 
 class OcrTaskRequest(APIView):
     def post(self, request, *args, **kwargs):
-        return Response([])
+        publication = request.query_params.get('publication', None)
+        if publication != None:
+            perform_ocr.delay(publication)
+            return Response(True)
+
+        return Response(False)

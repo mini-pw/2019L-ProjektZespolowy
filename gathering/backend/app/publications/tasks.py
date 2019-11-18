@@ -51,29 +51,33 @@ def perform_ocr(publication_id):
 
     with PyTessBaseAPI() as tess:
         for page in pages:
-            tess.SetImageFile(page.image.path)
-            tess.Recognize()
-            tsv = tess.GetTSVText(0)
-            data = []
+            try:
+                tess.SetImageFile(page.image.path)
+                tess.Recognize()
+                tsv = tess.GetTSVText(0)
+                data = []
 
-            for line in tsv.split("\n"):
-                if len(line) == 0:
-                    continue
-                fields = line.split("\t")
-                if len(fields) != 12:
-                    continue
+                for line in tsv.split("\n"):
+                    if len(line) == 0:
+                        continue
+                    fields = line.split("\t")
+                    if len(fields) != 12:
+                        continue
 
-                x1 = int(fields[-5])
-                y1 = int(fields[-4])
-                x2 = x1 + int(fields[-3])
-                y2 = y1 + int(fields[-2])
-                data.append({
-                    "text": fields[-1],
-                    "x1": x1,
-                    "y1": y1,
-                    "x2": x2,
-                    "y2": y2
-                })
+                    x1 = int(fields[-5])
+                    y1 = int(fields[-4])
+                    x2 = x1 + int(fields[-3])
+                    y2 = y1 + int(fields[-2])
+                    data.append({
+                        "text": fields[-1],
+                        "x1": x1,
+                        "y1": y1,
+                        "x2": x2,
+                        "y2": y2
+                    })
 
-            page.ocr = data
-            page.save()
+                page.ocr = data
+                page.save()
+            except Exception:
+                page.ocr = "Error processing page."
+                page.save()
