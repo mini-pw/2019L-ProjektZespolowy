@@ -1,6 +1,5 @@
 import os
 import tempfile
-import json
 
 import requests
 from django.core import files
@@ -76,5 +75,5 @@ def perform_ocr(publication_id):
                     "y2": y2
                 })
 
-            page.ocr = json.dumps(data)
+            page.ocr = data
             page.save()
