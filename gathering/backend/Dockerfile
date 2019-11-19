@@ -1,8 +1,8 @@
-FROM python:3.7
+FROM python:buster
 
 WORKDIR /app
 
-RUN apt-get update && apt-get -y install poppler-utils
+RUN apt-get update && apt-get -y install poppler-utils tesseract-ocr libtesseract-dev libleptonica-dev pkg-config
 
 RUN pip install uwsgi
 

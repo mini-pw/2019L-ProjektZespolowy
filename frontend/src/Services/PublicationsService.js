@@ -1,6 +1,6 @@
 import {fetchBody} from '../utils';
 
-const apiUrl = 'http://localhost:8081/api/annotations';//'http://annotations.mini.pw.edu.pl/api/annotations';
+const apiUrl = 'http://annotations.mini.pw.edu.pl/api/annotations';
 
 export default class PublicationsService {
   constructor(authService) {

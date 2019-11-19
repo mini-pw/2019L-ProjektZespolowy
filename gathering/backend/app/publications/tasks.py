@@ -7,6 +7,7 @@ from django.core import files
 from config.celery import app
 from publications.models import Publication, Page
 from services.converter import convert_pdf_to_png
+from tesserocr import *
 
 @app.task
 def save_file_locally(publication_id):
@@ -40,5 +41,43 @@ def save_file_locally(publication_id):
         publication.download_status = Publication.DOWNLOAD_FAILED
     else:
         publication.download_status = Publication.DOWNLOAD_DONE
+        perform_ocr.delay(publication_id)
     publication.save()
 
+@app.task
+def perform_ocr(publication_id):
+    publication = Publication.objects.get(id=publication_id)
+    pages = Page.objects.filter(publication=publication)
+
+    with PyTessBaseAPI() as tess:
+        for page in pages:
+            try:
+                tess.SetImageFile(page.image.path)
+                tess.Recognize()
+                tsv = tess.GetTSVText(0)
+                data = []
+
+                for line in tsv.split("\n"):
+                    if len(line) == 0:
+                        continue
+                    fields = line.split("\t")
+                    if len(fields) != 12:
+                        continue
+
+                    x1 = int(fields[-5])
+                    y1 = int(fields[-4])
+                    x2 = x1 + int(fields[-3])
+                    y2 = y1 + int(fields[-2])
+                    data.append({
+                        "text": fields[-1],
+                        "x1": x1,
+                        "y1": y1,
+                        "x2": x2,
+                        "y2": y2
+                    })
+
+                page.ocr = data
+                page.save()
+            except Exception:
+                page.ocr = "Error processing page."
+                page.save()

@@ -21,6 +21,12 @@ class PageSerializer(serializers.ModelSerializer):
         fields = ('id', 'publication', 'number', 'annotation_status', 'image')
 
 
+class PageOcrSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Page
+        fields = ('id', 'ocr')
+
+
 class AnnotationSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     annotations_used = serializers.PrimaryKeyRelatedField(
