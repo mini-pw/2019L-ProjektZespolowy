@@ -1,14 +1,13 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import AdminPasswordChangeForm
 
 from publications.models import Annotation
 
 
 class CustomUserAdmin(UserAdmin):
     fieldsets = (
-        ('Info', {'fields': ('username', 'first_name', 'last_name',)}),
+        ('Info', {'fields': ('username', 'first_name', 'last_name', 'password')}),
         ('Statistics', {'fields': ('annotations_count', 'used_annotations_count')}),
         ('Permissions', {'fields': ('is_staff', 'is_superuser')}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
@@ -19,7 +18,6 @@ class CustomUserAdmin(UserAdmin):
             'fields': ('username', 'password1', 'password2'),
         }),
     )
-    change_password_form = AdminPasswordChangeForm
     list_display = (
         'username', 'first_name', 'last_name', 'is_staff', 'is_superuser',
         'annotations_count', 'used_annotations_count'
