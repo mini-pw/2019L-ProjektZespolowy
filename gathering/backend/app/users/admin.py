@@ -7,7 +7,7 @@ from publications.models import Annotation
 
 class CustomUserAdmin(UserAdmin):
     fieldsets = (
-        ('Info', {'fields': ('username', 'first_name', 'last_name',)}),
+        ('Info', {'fields': ('username', 'first_name', 'last_name', 'password')}),
         ('Statistics', {'fields': ('annotations_count', 'used_annotations_count')}),
         ('Permissions', {'fields': ('is_staff', 'is_superuser')}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
@@ -24,7 +24,7 @@ class CustomUserAdmin(UserAdmin):
     )
     list_filter = ('is_staff', 'is_superuser', 'groups')
     search_fields = ('username', 'first_name', 'last_name')
-
+    
     readonly_fields = ('username', 'annotations_count', 'used_annotations_count', 'last_login', 'date_joined')
 
     def annotations_count(self, user):
