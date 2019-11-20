@@ -66,7 +66,7 @@ class PageFilter(filters.FilterSet):
 
     class Meta:
         model = Page
-        fields = ('publication_id', 'annotation_status', 'tags')
+        fields = ('id', 'publication_id', 'number', 'annotation_status', 'tags')
 
     def filter_with_tags(self, queryset, name, value):
         pages_ids = Annotation.objects.filter(visible=True, tags__contains=value).values_list('page_id', flat=True)
