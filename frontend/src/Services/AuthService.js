@@ -1,7 +1,7 @@
 import {fetchBody} from '../utils';
 import {fetchBodyThrowMessage} from '../utils';
 
-const apiUrl = 'http://annotations.mini.pw.edu.pl/api/annotations'; //'http://localhost:8081/api/annotations';
+const apiUrl = 'http://localhost:8081/api/annotations';//'http://annotations.mini.pw.edu.pl/api/annotations'; 
 const headers = {
   Accept: "application/json",
   "Content-Type": "application/json; charset=utf8"

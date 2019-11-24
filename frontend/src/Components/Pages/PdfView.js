@@ -103,7 +103,7 @@ function PdfView(props) {
         {
           pages.length > 0 && selectedPages.map((page, ind) => {
                 ind = Math.ceil(currentPage * perPage) + ind;
-                return <Canvas key={page.id} id={page.id} pageIndex={ind} image={page.imageUrl} annotations={annotations[ind] || []} onAnnotationsChange={onAnnotationsChange} scale={scale} onScaleChange={setScale} showAnnotationsInfoModal={(number) => setShowAnnotationInfoModal(annotations[ind][number])}/>;
+                return <Canvas key={page.id} id={page.id} pageIndex={ind} publicationId={props.match.params.id} image={page.imageUrl} annotations={annotations[ind] || []} onAnnotationsChange={onAnnotationsChange} scale={scale} onScaleChange={setScale} showAnnotationsInfoModal={(number) => setShowAnnotationInfoModal(annotations[ind][number])}/>;
               })
         }
         {

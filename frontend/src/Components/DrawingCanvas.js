@@ -72,8 +72,17 @@ class TransformerComponent extends React.Component {
 
 class DrawingCanvas extends Component {
   state = {
-    selectedRect: null
+    selectedRect: null,
+    selectedTextAnnotations: [],
+    isDragging: false,
+    originalX: 0,
+    originalY: 0
   };
+
+  componentWillUnmount() {
+    window.removeEventListener('mousemove', this.handleMouseMove);
+    window.removeEventListener('mouseup', this.handleMouseUp);
+  }
 
   selectedRects() {
     return this.props.selectedAnnotations ? this.props.selectedAnnotations.map(
@@ -86,19 +95,73 @@ class DrawingCanvas extends Component {
     return types.map(type => allTypes.find(({value}) => value === type).name).join(',');
   }
 
+  isTextAnnotation(types) {
+    var type = types.join();
+    if(type.includes('cell') || type.includes('title') || type.includes('text'))
+      return true;
+    return false;
+  }
+
+  handleMouseDown = (event) => {
+    if(!this.props.isAnnotationTextMode)
+      return;
+    window.addEventListener('mousemove', this.handleMouseMove);
+    window.addEventListener('mouseup', this.handleMouseUp);
+
+    this.stage = event.currentTarget.getStage();
+    this.setState({
+      originalX: this.stage.getPointerPosition().x,
+      originalY: this.stage.getPointerPosition().y,
+      isDragging: true
+    });
+  };
+  
+  handleMouseMove = (event) => {
+    const { isDragging } = this.state;
+
+    if (!isDragging) {
+      return;
+    }
+    var x1 = Math.min(this.state.originalX, this.stage.getPointerPosition().x);
+    var x2 = Math.max(this.state.originalX, this.stage.getPointerPosition().x);
+    var y1 = Math.min(this.state.originalY, this.stage.getPointerPosition().y);
+    var y2 = Math.max(this.state.originalY, this.stage.getPointerPosition().y);
+    var selected = this.props.textAnnotations.filter(el => x1<el.x2 && x2>el.x1 && y2>el.y1 && y1<el.y2);
+    this.setState(
+      {
+        selectedTextAnnotations: selected
+      }
+    );
+  };
+
+  handleMouseUp = () => {
+    window.removeEventListener('mousemove', this.handleMouseMove);
+    window.removeEventListener('mouseup', this.handleMouseUp);
+
+    this.setState(
+      {
+        originalX: 0,
+        originalY: 0,
+        isDragging: false
+      }
+    );
+  };
+
   render() {
     return (
       <Layer>
-        <Image image={this.props.image} perfectDrawEnabled={false}/>
-        {this.props.annotations && this.props.annotations.map(
+        <Image onMouseDown={this.handleMouseDown} image={this.props.image} perfectDrawEnabled={false}/>
+        {this.props.annotations && this.props.annotations.filter(el => !this.isTextAnnotation(el.type))
+        .map(
           ({x1, y1, type, subRegions}, ind) => 
-            <React.Fragment key={ind}>
-            {type && type.length > 0 && <Text x={x1+5} y={y1+5} text={this.formatTypes(type)} fill={getColorByIndex(ind)} />}
-            {subRegions && subRegions.map(({x1, y1, type}, ind2) => 
-              type && type.length > 0 && <Text key={ind2} x={x1+5} y={y1+5} text={this.formatTypes(type)} fill={getColorByIndex(ind)}/> )}
-            </React.Fragment>
+                    <React.Fragment key={ind}>
+                      {type && type.length > 0 && <Text x={x1+5} y={y1+5} text={this.formatTypes(type)} fill={getColorByIndex(ind)} />}
+                      {subRegions && subRegions.map(({x1, y1, type}, ind2) => 
+                        type && type.length > 0 && <Text key={ind2} x={x1+5} y={y1+5} text={this.formatTypes(type)} fill={getColorByIndex(ind)}/> )}
+                    </React.Fragment>
         )}
-        {this.props.annotations && this.props.annotations.map(({x1, y1, x2, y2, type, subRegions}, ind) =>
+        {this.props.annotations && this.props.annotations.filter(el => !this.isTextAnnotation(el.type))
+        .map(({x1, y1, x2, y2, type, subRegions}, ind) =>
           <React.Fragment key={ind}>
             <Rect onClick={(evt) => this.props.changeAnnotationIndex(ind, null, evt)}
                   onDblClick={() => this.props.showModal(ind)}
@@ -128,6 +191,35 @@ class DrawingCanvas extends Component {
           </React.Fragment>
         )}
         {this.selectedRects().map((rectName) => <TransformerComponent key={rectName} selectedShapeName={rectName}/>)}
+      
+        {this.props.isAnnotationTextMode && this.state.selectedTextAnnotations && 
+          this.state.selectedTextAnnotations.map(
+              ({x1, y1, x2, y2}, ind) => 
+                            <Rect x={x1} y={y1} width={initRectSize} height={initRectSize} 
+                                  scaleX={(x2 - x1) / initRectSize}
+                                  scaleY={(y2 - y1) / initRectSize}
+                                  stroke='#6262e5'
+                                  strokeScaleEnabled={false}
+                                  name={`text${ind}`}
+                                  key={ind} 
+                                  perfectDrawEnabled={false}
+                            />
+            )}
+        {this.props.annotations && this.props.annotations.filter(el => this.isTextAnnotation(el.type))
+            .map(
+              ({x1, y1, type, subRegions}, ind) => 
+                        <React.Fragment key={ind}>
+                          {subRegions.map(({x1, y1, x2, y2, type}, ind2) =>
+                            <Rect x={x1} y={y1} width={initRectSize} height={initRectSize} scaleX={(x2 - x1) / initRectSize}
+                                  scaleY={(y2 - y1) / initRectSize}
+                                  stroke={getColorByIndex(ind)}
+                                  strokeScaleEnabled={false}
+                                  name={`rect${ind}.${ind2}`}
+                                  key={`${ind}.${ind2}`}
+                                  perfectDrawEnabled={false}
+                            />)}
+                        </React.Fragment>
+            )}
       </Layer>
     );
   }

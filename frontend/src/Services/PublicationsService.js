@@ -1,6 +1,6 @@
 import {fetchBody} from '../utils';
 
-const apiUrl = 'http://annotations.mini.pw.edu.pl/api/annotations'; //'http://localhost:8081/api/annotations';
+const apiUrl = 'http://localhost:8081/api/annotations'; //'http://annotations.mini.pw.edu.pl/api/annotations'; 
 
 export default class PublicationsService {
   constructor(authService) {
@@ -93,5 +93,18 @@ export default class PublicationsService {
       return list[0];
     }
     return '';
+  }
+
+  async getOcrData(publicationId, pageNumber) {
+    await this.authService.ensureLoggedIn();
+    const data = await fetchBody(`${apiUrl}/publications/ocr`, {
+      method: 'POST',
+      body: JSON.stringify({
+        publication_id: publicationId,
+        page: pageNumber
+      }),
+      headers: this.headers
+    });
+    return data.results[0].ocr;
   }
 }
