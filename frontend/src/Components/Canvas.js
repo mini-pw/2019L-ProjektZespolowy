@@ -1,7 +1,7 @@
 import useImage from 'use-image';
 import {Stage} from 'react-konva';
 import {Item, Menu, MenuProvider, Submenu} from 'react-contexify';
-import React, {useContext, useState, useEffect} from 'react';
+import React, {useContext, useState, useEffect, useRef} from 'react';
 import 'react-contexify/dist/ReactContexify.min.css';
 import DrawingCanvas from './DrawingCanvas';
 import * as PropTypes from 'prop-types';
@@ -68,28 +68,30 @@ const MyMenu = ({annotations, onNewAdnotationClick, onConnectAnnotationClick, on
       {(selectedAnnotationsCount > 0) && <Item onClick={onDeleteAnnotationClick}>Usuń adnotację</Item>}
       {(selectedAnnotationsCount > 1) && <Item onClick={onConnectAnnotationClick}>Połącz adnotacje</Item>}
       {(selectedAnnotationsCount === 1 && (isChart || isTable) && subRegionIndex == null) && <Submenu label='Dodaj podobiekty'>
-                                            <Item onClick={() => onAddTextSubregionClick('title')}>Tytuł</Item>
+                                            <Item onClick={() => onAddTextSubregionClick('title', currentAnnotation)}>Tytuł</Item>
                                             {(isChart === true) &&  
                                             <>
                                               <Item onClick={() => onAddSubregionClick('x_axis')}>Oś x</Item>
-                                              <Item onClick={() => onAddTextSubregionClick('x_axis_title')}>Tytuł osi x</Item>
+                                              <Item onClick={() => onAddTextSubregionClick('x_axis_title', currentAnnotation)}>Tytuł osi x</Item>
                                               <Item onClick={() => onAddSubregionClick('y_axis')}>Oś y</Item>
-                                              <Item onClick={() => onAddTextSubregionClick('y_axis_title')}>Tytuł osi y</Item>
+                                              <Item onClick={() => onAddTextSubregionClick('y_axis_title', currentAnnotation)}>Tytuł osi y</Item>
                                             </>}
                                             {(isTable === true) &&  
                                             <>
-                                              <Item onClick={() => onAddTextSubregionClick('cell')}>Komórka</Item>
+                                              <Item onClick={() => onAddTextSubregionClick('cell', currentAnnotation)}>Komórka</Item>
                                               <Item onClick={() => onAddSubregionClick('row')}>Wiersz</Item>
-                                              <Item onClick={() => onAddTextSubregionClick('row_title')}>Tytuł wiersza</Item>
+                                              <Item onClick={() => onAddTextSubregionClick('row_title', currentAnnotation)}>Tytuł wiersza</Item>
                                               <Item onClick={() => onAddSubregionClick('column')}>Kolumna</Item>
-                                              <Item onClick={() => onAddTextSubregionClick('column_title')}>Tytuł kolumny</Item>
+                                              <Item onClick={() => onAddTextSubregionClick('column_title', currentAnnotation)}>Tytuł kolumny</Item>
                                             </>}
-                                            <Item onClick={() => onAddTextSubregionClick('text_annotation')}>Adnotacja tekstowa</Item>
+                                            <Item onClick={() => onAddTextSubregionClick('text_annotation', currentAnnotation)}>Adnotacja tekstowa</Item>
                                           </Submenu>}
     </Menu>);
   }
 
-function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAnnotationIndex, annotations, textAnnotations, onAnnotationMove, onAnnotationTransform, selectedAnnotationsIndex, showModal, isAnnotationTextMode}) {
+function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAnnotationIndex, 
+  annotations, textAnnotations, onAnnotationMove, onAnnotationTransform, selectedAnnotationsIndex, 
+  showModal, isAnnotationTextMode, onSaveTextAnnotation}) {
   // const [showZoomHelper, setShowZoomHelper] = useState(false);
   // const {helperService} = useContext(ServiceContext);
 
@@ -145,6 +147,7 @@ function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAn
         selectedAnnotations={selectedAnnotationsIndex}
         isAnnotationTextMode={isAnnotationTextMode}
         textAnnotations={textAnnotations}
+        onSaveTextAnnotation={onSaveTextAnnotation}
       />
     </Stage>
   </div>;
@@ -163,6 +166,8 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, publicationId, onSc
   const [downloadedImage] = useImage(image);
   const [isAnnotationTextMode, setAnnotationTextMode] = useState(false);
   const [textAnnotations, setTextAnnotations] = useState([]);
+  const currentTextAnnotationType = useRef();
+  const currentTextAnnotationParent = useRef();
 
   useEffect(() => {
     const handleResize = _debounce(() => {
@@ -254,26 +259,60 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, publicationId, onSc
     y1: y1 * downloadedImage.height,
     y2: y2 * downloadedImage.height,
     type,
-    subRegions: subRegions ? subRegions.map(({x1, x2, y1, y2, type}) => ({
+    subRegions: subRegions ? subRegions.map(({x1, x2, y1, y2, type, subRegions}) => ({
       x1: x1 * downloadedImage.width,
       x2: x2 * downloadedImage.width,
       y1: y1 * downloadedImage.height,
       y2: y2 * downloadedImage.height,
+      subRegions: subRegions ? subRegions.map(({x1, x2, y1, y2, text}) => ({
+        x1: x1 * downloadedImage.width,
+        x2: x2 * downloadedImage.width,
+        y1: y1 * downloadedImage.height,
+        y2: y2 * downloadedImage.height,
+        text: text
+      })):null,
       type
     })) : null
   }));
 
-  const scaleUpTextAnnotations = () => textAnnotations.map(({x1, x2, y1, y2}) => ({
+  const scaleUpTextAnnotations = () => textAnnotations.map(({x1, x2, y1, y2, text}) => ({
     x1: x1 * downloadedImage.width,
     x2: x2 * downloadedImage.width,
     y1: y1 * downloadedImage.height,
-    y2: y2 * downloadedImage.height
+    y2: y2 * downloadedImage.height,
+    text: text
   }));
 
-  const onAddTextSubregionClick = async (type) => {
+  const onAddTextSubregionClick = async (type, parent) => {
     var ocrInfo = await publicationsService.getOcrData(publicationId, pageIndex + 1);
     setTextAnnotations(ocrInfo);
     setAnnotationTextMode(true);
+    currentTextAnnotationParent.current = parent;
+    currentTextAnnotationType.current = type;
+  };
+
+  const onSaveTextAnnotation = (textAnnotations) => {
+    if (!textAnnotations || textAnnotations.length == 0) {
+      setAnnotationTextMode(false);
+      return;
+    }
+    var subregion = {
+        x1: 0,
+        x2: 0,
+        y1: 0,
+        y2: 0,
+        type: [currentTextAnnotationType.current],
+        subRegions: textAnnotations.map(el => ({
+          x1: el.x1 / downloadedImage.width,
+          x2: el.x2 / downloadedImage.width,
+          y1: el.y1 / downloadedImage.height,
+          y2: el.y2 / downloadedImage.height,
+          text: el.text
+        }))
+    };
+    currentTextAnnotationParent.current.data.subRegions.push(subregion);
+    onAnnotationsChange();
+    setAnnotationTextMode(false);
   };
 
   return <div>
@@ -289,6 +328,7 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, publicationId, onSc
                 showModal={showAnnotationsInfoModal}
                 isAnnotationTextMode={isAnnotationTextMode}
                 textAnnotations={scaleUpTextAnnotations()}
+                onSaveTextAnnotation={onSaveTextAnnotation}
       />
     </MenuProvider>
     <MyMenu id={`canvas_menu${id}`}

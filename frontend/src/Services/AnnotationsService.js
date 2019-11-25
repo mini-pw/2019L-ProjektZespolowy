@@ -1,7 +1,7 @@
 import {fetchBody} from '../utils';
 import {availableTags, groupBy} from '../common';
 
-const apiUrl = 'http://localhost:8081/api/annotations';//'http://annotations.mini.pw.edu.pl/api/annotations';
+const apiUrl = 'http://annotations.mini.pw.edu.pl/api/annotations';//'http://localhost:8081/api/annotations';//
 
 export default class AnnotationsService {
   constructor(authService, annotationsControllerService) {

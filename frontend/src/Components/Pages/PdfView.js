@@ -19,7 +19,7 @@ function PdfView(props) {
   const [scale, setScale] = useState({x: 1, y: 1});
   const [showAnnotationInfoModal, setShowAnnotationInfoModal] = useState(null);
   const {publicationsService, annotationsService, annotationsControllerService} = useContext(ServiceContext);
-  const perPage = 2;
+  const perPage = 1;
   const [currentPage, setCurrentPage] = useState(0);
 
   useEffect(() => {
