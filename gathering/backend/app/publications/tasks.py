@@ -56,6 +56,7 @@ def perform_ocr(publication_id):
                 tess.Recognize()
                 tsv = tess.GetTSVText(0)
                 data = []
+                width, height = tess.GetThresholdedImage().size
 
                 for line in tsv.split("\n"):
                     if len(line) == 0:
@@ -64,16 +65,19 @@ def perform_ocr(publication_id):
                     if len(fields) != 12:
                         continue
 
-                    x1 = int(fields[-5])
-                    y1 = int(fields[-4])
-                    x2 = x1 + int(fields[-3])
-                    y2 = y1 + int(fields[-2])
+                    if len(fields[-1]) == 0:     #skip empty boxes
+                        continue
+
+                    x1 = int(fields[-6])
+                    y1 = int(fields[-5])
+                    x2 = x1 + int(fields[-4])
+                    y2 = y1 + int(fields[-3])
                     data.append({
                         "text": fields[-1],
-                        "x1": x1,
-                        "y1": y1,
-                        "x2": x2,
-                        "y2": y2
+                        "x1": x1 / width,
+                        "y1": y1 / height,
+                        "x2": x2 / width,
+                        "y2": y2 / height
                     })
 
                 page.ocr = data
