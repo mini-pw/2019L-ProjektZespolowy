@@ -1,4 +1,4 @@
-from collections import Iterable
+from collections.abc import Iterable
 from datetime import datetime
 
 from django.db.models import Count
