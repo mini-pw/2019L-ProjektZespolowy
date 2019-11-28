@@ -12,6 +12,18 @@
   right: 25px;
 }
 
+.save-fab {
+  position: fixed !important;
+  bottom: 100px;
+  right: 75px;
+}
+
+.discard-fab {
+  position: fixed !important;
+  bottom: 100px;
+  right: 25px;
+}
+
 .mm-popup__box {
   width: 400px !important;
   overflow: initial !important;

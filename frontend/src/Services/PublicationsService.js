@@ -1,6 +1,6 @@
 import {fetchBody} from '../utils';
 
-const apiUrl = 'http://annotations.mini.pw.edu.pl/api/annotations';
+const apiUrl = 'http://annotations.mini.pw.edu.pl/api/annotations'; //'http://localhost:8081/api/annotations'; //
 
 export default class PublicationsService {
   constructor(authService) {
@@ -56,6 +56,7 @@ export default class PublicationsService {
       }),
       headers: this.headers
     });
+    list.forEach(el => el.imageUrl = el.imageUrl.replace("http", "https"));
     return list;
   }
 
@@ -88,8 +89,22 @@ export default class PublicationsService {
       headers: this.headers
     });
     if (list && list.length > 0) {
+      list[0].imageUrl = list[0].imageUrl.replace("http", "https");
       return list[0];
     }
     return '';
+  }
+
+  async getOcrData(publicationId, pageNumber) {
+    await this.authService.ensureLoggedIn();
+    const data = await fetchBody(`${apiUrl}/publications/ocr`, {
+      method: 'POST',
+      body: JSON.stringify({
+        publication_id: publicationId,
+        page: pageNumber
+      }),
+      headers: this.headers
+    });
+    return data.results[0].ocr;
   }
 }

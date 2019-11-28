@@ -22,6 +22,20 @@ export const availableTypes = [
   {id: 12, name: "Diagram", value: "diagram"}
 ];
 
+export const availableSubTypes = [
+  {id: 15, name: "Cell", value: "cell"},
+  {id: 16, name: "Title", value: "title"},
+  {id: 17, name: "Row", value: "row"},
+  {id: 18, name: "Row Title", value: "row_title"},
+  {id: 19, name: "Column", value: "column"},
+  {id: 20, name: "Column Title", value: "column_title"},
+  {id: 21, name: "Text annotation", value: "text_annotation"},
+  {id: 22, name: "X axis", value: "x_axis"},
+  {id: 23, name: "Title of x axis", value: "x_axis_title"},
+  {id: 24, name: "Y axis", value: "y_axis"},
+  {id: 25, name: "Title of y axis", value: "y_axis_title"}
+];
+
 export const availableTags = [
   {id: 1, name: "To discuss", value: "to_discuss"},
   {id: 2, name: "Hard case", value: "hard_case"},

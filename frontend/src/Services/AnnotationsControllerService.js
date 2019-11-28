@@ -44,8 +44,8 @@ export default class AnnotationsControllerService {
     this.stack = new Stack();
   }
 
-  selectAnnotation(pageIndex, annotationIndex) {
-    this.selectedAnnotations = [{pageIndex, annotationIndex}];
+  selectAnnotation(pageIndex, annotationIndex, subRegionIndex) {
+    this.selectedAnnotations = [{pageIndex, annotationIndex, subRegionIndex}];
   }
 
   updateAnnotationsIds(pageIndex, newIds) {
@@ -53,72 +53,82 @@ export default class AnnotationsControllerService {
     this.annotations = [...this.annotations];
   }
 
-  isAnnotationSelected(pageIndex, annotationIndex) {
+  isAnnotationSelected(pageIndex, annotationIndex, subRegionIndex) {
     return this.selectedAnnotations.some((annotation) => annotation.pageIndex === pageIndex &&
-      annotation.annotationIndex === annotationIndex);
+      annotation.annotationIndex === annotationIndex && annotation.subRegionIndex === subRegionIndex);
   }
 
-  toggleAnnotationSelection(pageIndex, annotationIndex) {
-    if (this.isAnnotationSelected(pageIndex, annotationIndex)) {
-      this.selectedAnnotations = this.selectedAnnotations.filter((annotation) => !(annotation.pageIndex === pageIndex &&
-        annotation.annotationIndex === annotationIndex));
+  toggleAnnotationSelection(pageIndex, annotationIndex, subRegionIndex) {
+    if (this.isAnnotationSelected(pageIndex, annotationIndex, subRegionIndex)) {
+      this.selectedAnnotations = this.selectedAnnotations.filter((annotation) => 
+      !(annotation.pageIndex === pageIndex && annotation.annotationIndex === annotationIndex && annotation.subRegionIndex === subRegionIndex));
     } else {
-      this.selectedAnnotations = [...this.selectedAnnotations, {pageIndex, annotationIndex}];
+      this.selectedAnnotations = [...this.selectedAnnotations, {pageIndex, annotationIndex, subRegionIndex}];
     }
   }
 
-  async addAnnotationToPage(pageIndex, newAnnotation) {
-    const setAnnotationData = async (newAnnotation) => new Promise(resolve => {
-      Popup.registerPlugin('prompt', function (callback) {
-        let defaultType = [];
-        newAnnotation.data.type = defaultType;
-        newAnnotation.data.text = null;
-        newAnnotation.tags = [];
-        let promptType = defaultType;
-        let promptText = null;
-        let promptTags = [];
-
-        let promptChange = function (type, text, tags) {
-          promptType = type;
-          promptText = text;
-          promptTags = tags;
-        };
-
-        this.create({
-          title: 'New annotation',
-          content: <Prompt type={defaultType} text="" tags={[]} onChange={promptChange}/>,
-          buttons: {
-            left: ['cancel'],
-            right: [
-              {
-                text: 'Save',
-                key: '⌘+s',
-                className: 'success',
-                action: function () {
-                  callback(promptType, promptText, promptTags);
-                  Popup.close();
-                }
-              }]
-          }
+  async addAnnotationToPage(pageIndex, newAnnotation, showModal) {
+    if (showModal) {
+      const setAnnotationData = async (newAnnotation) => new Promise(resolve => {
+        Popup.registerPlugin('prompt', function (callback) {
+          let defaultType = [];
+          newAnnotation.data.type = defaultType;
+          newAnnotation.data.text = null;
+          newAnnotation.tags = [];
+          let promptType = defaultType;
+          let promptText = null;
+          let promptTags = [];
+  
+          let promptChange = function (type, text, tags) {
+            promptType = type;
+            promptText = text;
+            promptTags = tags;
+          };
+  
+          this.create({
+            title: 'New annotation',
+            content: <Prompt type={defaultType} text="" tags={[]} onChange={promptChange}/>,
+            buttons: {
+              left: ['cancel'],
+              right: [
+                {
+                  text: 'Save',
+                  key: '⌘+s',
+                  className: 'success',
+                  action: function () {
+                    callback(promptType, promptText, promptTags);
+                    Popup.close();
+                  }
+                }]
+            }
+          });
+        });
+  
+        /** Call the plugin */
+        Popup.plugins().prompt(function (type, text, tags) {
+          newAnnotation.data.type = type;
+          newAnnotation.data.text = text;
+          newAnnotation.tags = tags;
+          resolve(newAnnotation);
         });
       });
-
-      /** Call the plugin */
-      Popup.plugins().prompt(function (type, text, tags) {
-        newAnnotation.data.type = type;
-        newAnnotation.data.text = text;
-        newAnnotation.tags = tags;
-        resolve(newAnnotation);
-      });
-    });
+      newAnnotation = await setAnnotationData(newAnnotation);
+    }
     const updatedAnnotations = _.cloneDeep(this.annotations);
-    updatedAnnotations[pageIndex] = [...this.annotations[pageIndex], await setAnnotationData(newAnnotation)];
+    updatedAnnotations[pageIndex] = [...this.annotations[pageIndex], newAnnotation];
     this.annotations = updatedAnnotations;
   }
 
   deleteSelectedAnnotations() {
-    this.annotations = this.annotations.map((annotationsOnPage, pageIndex) =>
-      annotationsOnPage.filter((_, annotationIndex) => !this.isAnnotationSelected(pageIndex, annotationIndex)));
+    const updatedAnnotations = _.cloneDeep(this.annotations);
+    for(var i=0; i<this.selectedAnnotations.length; i++){
+      var selected = this.selectedAnnotations[i];
+      if(selected.subRegionIndex == null)
+        updatedAnnotations[selected.pageIndex].splice(selected.annotationIndex, 1);
+      else
+        updatedAnnotations[selected.pageIndex][selected.annotationIndex].data.subRegions.splice(selected.subRegionIndex, 1);
+    }
+    this.annotations = [...updatedAnnotations];
     this.selectedAnnotations = [];
   }
 
@@ -170,30 +180,72 @@ export default class AnnotationsControllerService {
       const originalTags = this.annotations[pageIndex][annotationIndex].tags;
       Popup.plugins().prompt(originalType, originalText, originalTags, updateAnnotation);
     });
-    this.annotations = await setAnnotationData();
+
+    var newAnnotations = await setAnnotationData();
+    this.annotations = this.deleteSubRegionsWhenTypeChanges(newAnnotations, pageIndex, annotationIndex);
+  }
+
+  deleteSubRegionsWhenTypeChanges(newAnnotations, pageIndex, annotationIndex){
+    var originalType = this.annotations[pageIndex][annotationIndex].data.type.toString();
+    var isChartOriginal = this.checkIfChart(originalType);
+    var isTableOriginal = !isChartOriginal && this.checkIfTable(originalType);
+    var newType = newAnnotations[pageIndex][annotationIndex].data.type.toString();
+    var isChartNew = this.checkIfChart(newType);
+    var isTableNew = !isChartNew && this.checkIfTable(newType);
+    if((isChartOriginal && !isChartNew) || (isTableOriginal && !isTableNew))
+      newAnnotations[pageIndex][annotationIndex].data.subRegions = [];
+    return newAnnotations;
+  }
+  checkIfChart(type){
+    return type.toLowerCase().includes('plot') || type.toLowerCase().includes('chart');
+  }
+  checkIfTable(type){
+    return type.toLowerCase().includes('table');
   }
 
   copySelectedAnnotations(copyOffset) {
     const updatedAnnotations = _.cloneDeep(this.annotations);
-    this.selectedAnnotations.forEach(({pageIndex, annotationIndex}) => updatedAnnotations[pageIndex].push({
-      ...updatedAnnotations[pageIndex][annotationIndex],
-      data: {
-        ...updatedAnnotations[pageIndex][annotationIndex].data,
-        x1: updatedAnnotations[pageIndex][annotationIndex].data.x1 + copyOffset,
-        x2: updatedAnnotations[pageIndex][annotationIndex].data.x2 + copyOffset,
-        y1: updatedAnnotations[pageIndex][annotationIndex].data.y1 + copyOffset,
-        y2: updatedAnnotations[pageIndex][annotationIndex].data.y2 + copyOffset
+    this.selectedAnnotations.forEach(({pageIndex, annotationIndex, subRegionIndex}) => 
+    {
+      if(subRegionIndex == null) {
+        updatedAnnotations[pageIndex].push({
+          ...updatedAnnotations[pageIndex][annotationIndex],
+          data: {
+            ...updatedAnnotations[pageIndex][annotationIndex].data,
+            x1: updatedAnnotations[pageIndex][annotationIndex].data.x1 + copyOffset,
+            x2: updatedAnnotations[pageIndex][annotationIndex].data.x2 + copyOffset,
+            y1: updatedAnnotations[pageIndex][annotationIndex].data.y1 + copyOffset,
+            y2: updatedAnnotations[pageIndex][annotationIndex].data.y2 + copyOffset,
+            subRegions: updatedAnnotations[pageIndex][annotationIndex].data.subRegions.map(region => 
+              {return {...region, x1: region.x1 + copyOffset, x2: region.x2 + copyOffset, y1: region.y1 + copyOffset, y2: region.y2 + copyOffset}})
+          }
+        });
       }
-    }));
+      else {
+        updatedAnnotations[pageIndex][annotationIndex].data.subRegions.push({
+          ...updatedAnnotations[pageIndex][annotationIndex].data.subRegions[subRegionIndex],
+          x1: updatedAnnotations[pageIndex][annotationIndex].data.subRegions[subRegionIndex].x1 + copyOffset/2,
+          x2: updatedAnnotations[pageIndex][annotationIndex].data.subRegions[subRegionIndex].x2 + copyOffset/2,
+          y1: updatedAnnotations[pageIndex][annotationIndex].data.subRegions[subRegionIndex].y1 + copyOffset/2,
+          y2: updatedAnnotations[pageIndex][annotationIndex].data.subRegions[subRegionIndex].y2 + copyOffset/2
+        });
+      }
+    });
     this.annotations = updatedAnnotations;
   }
 
-  transformAnnotation(pageIndex, annotationIndex, newDataFields) {
+  transformAnnotation(pageIndex, annotationIndex, subRegionIndex, newDataFields) {
     const updatedAnnotations = _.cloneDeep(this.annotations);
-    updatedAnnotations[pageIndex][annotationIndex].data = {
-      ...updatedAnnotations[pageIndex][annotationIndex].data,
-      ...newDataFields
-    };
+    if(subRegionIndex == null)
+      updatedAnnotations[pageIndex][annotationIndex].data = {
+        ...updatedAnnotations[pageIndex][annotationIndex].data,
+        ...newDataFields
+      };
+    else
+      updatedAnnotations[pageIndex][annotationIndex].data.subRegions[subRegionIndex] = {
+        ...updatedAnnotations[pageIndex][annotationIndex].data.subRegions[subRegionIndex],
+        ...newDataFields
+      };
     this.annotations = updatedAnnotations;
   }
 
