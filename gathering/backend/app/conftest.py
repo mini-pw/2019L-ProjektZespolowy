@@ -1,6 +1,6 @@
 import pytest
 from django.contrib.auth.models import User
-from model_mommy import mommy
+from model_bakery import baker
 from rest_framework.test import APIClient
 
 
@@ -19,7 +19,7 @@ new_client = client
 
 @pytest.fixture
 def user():
-    user = mommy.make(User, is_active=True, is_staff=True, _fill_optional=True)
+    user = baker.make(User, is_active=True, is_staff=True, _fill_optional=True)
     return user
 
 

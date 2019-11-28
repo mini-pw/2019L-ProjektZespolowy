@@ -1,5 +1,6 @@
 import os
 import tempfile
+import time
 
 import requests
 from django.core import files
@@ -65,7 +66,7 @@ def perform_ocr(publication_id):
                     if len(fields) != 12:
                         continue
 
-                    if len(fields[-1]) == 0:     #skip empty boxes
+                    if len(fields[-1]) == 0 or fields[-1].isspace():    #skip empty boxes
                         continue
 
                     x1 = int(fields[-6])
@@ -83,5 +84,8 @@ def perform_ocr(publication_id):
                 page.ocr = data
                 page.save()
             except Exception:
-                page.ocr = "Error processing page."
+                page.ocr = {
+                    "message": "Error processing page.",
+                    "timestamp": int(time.time())
+                }
                 page.save()
