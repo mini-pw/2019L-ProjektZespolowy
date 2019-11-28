@@ -2,8 +2,10 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from model_bakery import baker
 from rest_framework import status
+import pytest
 
 from publications.models import Publication, Annotation, Page
+import publications.tasks
 
 PUBLICATIONS_LIST = reverse('publications_list')
 PAGES_LIST = reverse('pages_list')
@@ -163,3 +165,32 @@ def test_annotation_notDeleted_whenPageNrIsNotCorrect(user_client):
     }], format='json')
     get_response = user_client.get(ANNOTATIONS_LIST_CREATE, {'page_id': publication_page.id})
     assert len(get_response.data['results']) == 1
+
+@pytest.mark.parametrize("input,width,height,expected", [
+    # test parsing
+    ("5\t1\t1\t1\t1\t1\t105\t66\t74\t32\t90\tThe", 1, 1, {
+        "text": "The",
+        "x1": 105,
+        "y1": 66,
+        "x2": 179,
+        "y2": 98
+    }),
+    # scaling (careful with floating point accuracy)
+    ("5\t1\t1\t1\t1\t1\t32\t64\t32\t64\t90\tThe", 64, 128, {
+        "text": "The",
+        "x1": 0.5,
+        "y1": 0.5,
+        "x2": 1.0,
+        "y2": 1.0
+    }),
+    # invalid number of fields
+    ("5\t1\t1\t1\t1\t1\t32\t64\t32\t64\t90\tThe\tThe", 64, 128, None),
+    # empty string
+    ("", 64, 128, None),
+    # empty word
+    ("5\t1\t1\t1\t1\t1\t32\t64\t32\t64\t90\t", 64, 128, None),
+    # whitespace word
+    ("5\t1\t1\t1\t1\t1\t32\t64\t32\t64\t90\t   ", 64, 128, None),
+])
+def test_ocr_tsv_parsed_properly(input, width, height, expected):
+    assert publications.tasks.parse_tsv_line(input, width, height) == expected

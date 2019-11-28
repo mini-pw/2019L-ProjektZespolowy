@@ -60,26 +60,9 @@ def perform_ocr(publication_id):
                 width, height = tess.GetThresholdedImage().size
 
                 for line in tsv.split("\n"):
-                    if len(line) == 0:
-                        continue
-                    fields = line.split("\t")
-                    if len(fields) != 12:
-                        continue
-
-                    if len(fields[-1]) == 0 or fields[-1].isspace():    #skip empty boxes
-                        continue
-
-                    x1 = int(fields[-6])
-                    y1 = int(fields[-5])
-                    x2 = x1 + int(fields[-4])
-                    y2 = y1 + int(fields[-3])
-                    data.append({
-                        "text": fields[-1],
-                        "x1": x1 / width,
-                        "y1": y1 / height,
-                        "x2": x2 / width,
-                        "y2": y2 / height
-                    })
+                    parsed = parse_tsv_line(line, width, height)
+                    if parsed is not None:
+                        data.append(parsed)
 
                 page.ocr = data
                 page.save()
@@ -89,3 +72,26 @@ def perform_ocr(publication_id):
                     "timestamp": int(time.time())
                 }
                 page.save()
+
+def parse_tsv_line(line, width, height):
+    if len(line) == 0:
+        return None
+    fields = line.split("\t")
+    if len(fields) != 12:
+        return None
+
+    if len(fields[-1]) == 0 or fields[-1].isspace():    # skip empty boxes
+        return None
+
+    x1 = int(fields[-6])
+    y1 = int(fields[-5])
+    x2 = x1 + int(fields[-4])
+    y2 = y1 + int(fields[-3])
+
+    return {
+        "text": fields[-1],
+        "x1": x1 / width,
+        "y1": y1 / height,
+        "x2": x2 / width,
+        "y2": y2 / height
+    }
