@@ -2,7 +2,7 @@ from pdf2image import convert_from_path
 import os
 
 def convert_pdf_to_png(path, path_to_pages):
-    pages = convert_from_path(path)
+    pages = convert_from_path(path, dpi=400)
     _, filename = os.path.split(path)
 
     pages_paths = []

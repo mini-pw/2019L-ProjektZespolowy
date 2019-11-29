@@ -9,8 +9,11 @@ ANNOTATION_STATUS_SUPER = '3:super_annotated'
 
 class Publication(models.Model):
     DOWNLOAD_IN_PROGRESS = 'downloading'
+    DOWNLOAD_CONVERTING = 'converting'
+    DOWNLOAD_OCR = 'performing_ocr'
     DOWNLOAD_DONE = 'done'
     DOWNLOAD_FAILED = 'download_failed'
+    DOWNLOAD_CONV_FAILED = 'conversion_failed'
 
     name = models.CharField(max_length=512)
     source = models.CharField(max_length=64)
@@ -22,8 +25,11 @@ class Publication(models.Model):
         max_length=32, editable=False,
         choices=(
             (DOWNLOAD_IN_PROGRESS, "Downloading"),
+            (DOWNLOAD_CONVERTING, "Converting"),
+            (DOWNLOAD_OCR, "Performing OCR"),
             (DOWNLOAD_DONE, "Done"),
-            (DOWNLOAD_FAILED, "Download failed")
+            (DOWNLOAD_FAILED, "Download failed"),
+            (DOWNLOAD_CONV_FAILED, "Conversion failed")
         ), default=DOWNLOAD_IN_PROGRESS
     )
     annotation_status = models.CharField(

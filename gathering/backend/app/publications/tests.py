@@ -191,6 +191,8 @@ def test_annotation_notDeleted_whenPageNrIsNotCorrect(user_client):
     ("5\t1\t1\t1\t1\t1\t32\t64\t32\t64\t90\t", 64, 128, None),
     # whitespace word
     ("5\t1\t1\t1\t1\t1\t32\t64\t32\t64\t90\t   ", 64, 128, None),
+    # glitched Tesseract word spanning the entire page
+    ("5\t1\t1\t1\t1\t1\t0\t0\t300\t600\t90\tThe", 300, 600, None)
 ])
 def test_ocr_tsv_parsed_properly(input, width, height, expected):
     assert publications.tasks.parse_tsv_line(input, width, height) == expected
