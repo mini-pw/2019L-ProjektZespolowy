@@ -11,7 +11,7 @@ from services.converter import convert_pdf_to_png
 from tesserocr import *
 
 @app.task
-def save_file_locally(publication_id):
+def save_file_locally(publication_id, convert=True):
     publication = Publication.objects.get(id=publication_id)
     try:
         if not publication.local_file:
@@ -29,20 +29,33 @@ def save_file_locally(publication_id):
                     break
                 lf.write(block)
             publication.local_file.save(file_name, files.File(lf))
+    except Exception: # yup, too broad ¯\_(ツ)_/¯
+        publication.download_status = Publication.DOWNLOAD_FAILED
+    else:
+        publication.download_status = Publication.DOWNLOAD_CONVERTING
+        if convert:
+            convert_file.delay(publication_id)
 
-        # fixme: move to separate task
+    publication.save()
+
+@app.task
+def convert_file(publication_id, ocr=True):
+    publication = Publication.objects.get(id=publication_id)
+    try:
         pages_dir = tempfile.TemporaryDirectory()
         lf = publication.local_file
         for i, file in enumerate(convert_pdf_to_png(lf.path, pages_dir.name)):
             page = Page.objects.create(number=i + 1, publication=publication)
             with open(file, "rb") as f:
-                page.image.save(f'publication_{publication.id}_page_{i + 1}.jpg', files.File(f))
+                page.image.save(f'publication_{publication.id}_page_{i + 1}.png', files.File(f))
             page.save()
-    except Exception: # yup, too broad ¯\_(ツ)_/¯
-        publication.download_status = Publication.DOWNLOAD_FAILED
+    except Exception:
+        publication.download_status = Publication.DOWNLOAD_CONV_FAILED
     else:
-        publication.download_status = Publication.DOWNLOAD_DONE
-        perform_ocr.delay(publication_id)
+        publication.download_status = Publication.DOWNLOAD_OCR
+        if ocr:
+            perform_ocr.delay(publication_id)
+
     publication.save()
 
 @app.task
@@ -72,6 +85,9 @@ def perform_ocr(publication_id):
                     "timestamp": int(time.time())
                 }
                 page.save()
+
+    publication.download_status = Publication.DOWNLOAD_DONE
+    publication.save()
 
 def parse_tsv_line(line, width, height):
     if len(line) == 0:
