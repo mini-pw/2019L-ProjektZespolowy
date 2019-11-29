@@ -104,6 +104,9 @@ def parse_tsv_line(line, width, height):
     x2 = x1 + int(fields[-4])
     y2 = y1 + int(fields[-3])
 
+    if x1 == 0 and y1 == 0 and x2 == width and y2 == height:
+        return None     # work around a weird Tesseract bug
+
     return {
         "text": fields[-1],
         "x1": x1 / width,
