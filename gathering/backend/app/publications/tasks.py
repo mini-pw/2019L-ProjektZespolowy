@@ -45,7 +45,12 @@ def convert_file(publication_id, ocr=True):
         pages_dir = tempfile.TemporaryDirectory()
         lf = publication.local_file
         for i, file in enumerate(convert_pdf_to_png(lf.path, pages_dir.name)):
-            page = Page.objects.create(number=i + 1, publication=publication)
+            page = None
+            try:
+                page = Page.objects.get(number=i + 1, publication=publication)
+            except Page.DoesNotExist:
+                page = Page.objects.create(number=i + 1, publication=publication)
+
             with open(file, "rb") as f:
                 page.image.save(f'publication_{publication.id}_page_{i + 1}.png', files.File(f))
             page.save()

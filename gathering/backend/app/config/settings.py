@@ -29,7 +29,7 @@ env.read_env(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = '_2wys=*xj0q@s)q#em94@^lxbr_+ch1(dh(xa+5w@nz3$h-8@e'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 CORS_ORIGIN_ALLOW_ALL = True
