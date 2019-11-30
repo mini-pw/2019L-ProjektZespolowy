@@ -29,7 +29,7 @@ env.read_env(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = '_2wys=*xj0q@s)q#em94@^lxbr_+ch1(dh(xa+5w@nz3$h-8@e'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 CORS_ORIGIN_ALLOW_ALL = True
@@ -128,6 +128,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = env('STATIC_ROOT', default=os.path.join(BASE_DIR, 'static'))
 MEDIA_URL = '/media/'
 MEDIA_ROOT = env('MEDIA_ROOT', default=os.path.join(BASE_DIR, 'media'))
 

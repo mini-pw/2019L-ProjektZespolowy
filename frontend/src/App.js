@@ -18,7 +18,7 @@ function App() {
     {
       path: '/',
       exact: true,
-      appbarText: () => () => 'Wybierz Publikację',
+      appbarText: () => () => 'Wybierz publikację',
       main: () => <PdfsList username={username} searchParams={searchParams}/>
     },
     {
