@@ -20,13 +20,18 @@ const MyMenu = ({annotations, onNewAdnotationClick, onConnectAnnotationClick, on
     var subRegionIndex = null;
     var isChart = false;
     var isTable = false;
+    var isText = false;
     var currentAnnotation = null;
     if(selectedAnnotationsCount == 1){
       currentAnnotation = annotations[selectedAnnotationsIndex[0].annotationIndex];
       subRegionIndex = selectedAnnotationsIndex[0].subRegionIndex;
-      var selectedAnnotationsType = currentAnnotation.data.type[0];
-      isChart = selectedAnnotationsType.toLowerCase().includes('plot') || selectedAnnotationsType.toLowerCase().includes('chart');
+      var selectedAnnotationsType = currentAnnotation.data.type[0].toLowerCase();
+      isChart = selectedAnnotationsType.includes('plot') || selectedAnnotationsType.toLowerCase().includes('chart');
       isTable = !isChart && selectedAnnotationsType.toLowerCase().includes('table');
+      if(subRegionIndex != null) {
+        var subType = currentAnnotation.data.subRegions[subRegionIndex].type[0];
+        isText = (subType.includes('cell') || subType.includes('title') || subType.includes('text'));
+      }
     }
     const getRegionSize = (type, annotationSize, image) => {
       var size = {
@@ -63,8 +68,8 @@ const MyMenu = ({annotations, onNewAdnotationClick, onConnectAnnotationClick, on
     return (
     <Menu id={id}>
       <Item onClick={onNewAdnotationClick}>Dodaj adnotację</Item>
-      {(selectedAnnotationsCount > 0) && <Item onClick={onCopyAnnotationClick}>Kopiuj adnotację</Item>}
-      {(selectedAnnotationsCount === 1 && subRegionIndex == null) && <Item onClick={onEditAnnotationClick}>Edytuj adnotację</Item>}
+      {(selectedAnnotationsCount > 0 && !isText) && <Item onClick={onCopyAnnotationClick}>Kopiuj adnotację</Item>}
+      {(selectedAnnotationsCount === 1 && (subRegionIndex == null || isText)) && <Item onClick={() => onEditAnnotationClick(isText)}>Edytuj adnotację</Item>}
       {(selectedAnnotationsCount > 0) && <Item onClick={onDeleteAnnotationClick}>Usuń adnotację</Item>}
       {(selectedAnnotationsCount > 1) && <Item onClick={onConnectAnnotationClick}>Połącz adnotacje</Item>}
       {(selectedAnnotationsCount === 1 && (isChart || isTable) && subRegionIndex == null) && <Submenu label='Dodaj podobiekty'>
@@ -91,7 +96,7 @@ const MyMenu = ({annotations, onNewAdnotationClick, onConnectAnnotationClick, on
 
 function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAnnotationIndex, 
   annotations, textAnnotations, onAnnotationMove, onAnnotationTransform, selectedAnnotationsIndex, 
-  showModal, isAnnotationTextMode, onSaveTextAnnotation}) {
+  showModal, isAnnotationTextMode, isAnnotationTextEditMode, onSaveTextAnnotation}) {
   // const [showZoomHelper, setShowZoomHelper] = useState(false);
   // const {helperService} = useContext(ServiceContext);
 
@@ -148,6 +153,7 @@ function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAn
         isAnnotationTextMode={isAnnotationTextMode}
         textAnnotations={textAnnotations}
         onSaveTextAnnotation={onSaveTextAnnotation}
+        isAnnotationTextEditMode={isAnnotationTextEditMode}
       />
     </Stage>
   </div>;
@@ -165,6 +171,7 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, publicationId, onSc
   const {annotationsControllerService, publicationsService} = useContext(ServiceContext);
   const [downloadedImage] = useImage(image);
   const [isAnnotationTextMode, setAnnotationTextMode] = useState(false);
+  const [isAnnotationTextEditMode, setAnnotationTextEditMode] = useState(false);
   const [textAnnotations, setTextAnnotations] = useState([]);
   const currentTextAnnotationType = useRef();
   const currentTextAnnotationParent = useRef();
@@ -173,8 +180,15 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, publicationId, onSc
     const handleResize = _debounce(() => {
       setRender([]);
     }, 100);
+    const fetchData = async () => {
+      var ocrInfo = await publicationsService.getOcrData(publicationId, pageIndex + 1);
+      if(ocrInfo === null)
+        ocrInfo = [];
+      setTextAnnotations(ocrInfo);
+    }
     setOffset({x: 0, y: 0});
     window.addEventListener('resize', handleResize);
+    fetchData();
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -197,8 +211,13 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, publicationId, onSc
     }, true).then(onAnnotationsChange);
   };
 
-  const onEditAnnotationClick = () => {
-    annotationsControllerService.editSelectedAnnotation().then(onAnnotationsChange);
+  const onEditAnnotationClick = (isTextAnnotation) => {
+    if(!isTextAnnotation){
+      annotationsControllerService.editSelectedAnnotation().then(onAnnotationsChange);
+      return;
+    }
+    setAnnotationTextEditMode(true);
+    setAnnotationTextMode(true);
   };
 
   const onDeleteAnnotationClick = () => {
@@ -284,8 +303,6 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, publicationId, onSc
   }));
 
   const onAddTextSubregionClick = async (type, parent) => {
-    var ocrInfo = await publicationsService.getOcrData(publicationId, pageIndex + 1);
-    setTextAnnotations(ocrInfo);
     setAnnotationTextMode(true);
     currentTextAnnotationParent.current = parent;
     currentTextAnnotationType.current = type;
@@ -294,13 +311,22 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, publicationId, onSc
   const onSaveTextAnnotation = (textAnnotations) => {
     if (!textAnnotations || textAnnotations.length == 0) {
       setAnnotationTextMode(false);
+      setAnnotationTextEditMode(false);
       return;
     }
+
+    if(isAnnotationTextEditMode){
+      var index = selectedAnnotationsIndex[0].annotationIndex;
+      var subindex = selectedAnnotationsIndex[0].subRegionIndex;
+      var subregion = annotations[index].data.subRegions[subindex];
+      currentTextAnnotationParent.current = annotations[index];
+      currentTextAnnotationType.current = subregion.type[0];
+    }
     var subregion = {
-        x1: 0,
-        x2: 0,
-        y1: 0,
-        y2: 0,
+        x1: textAnnotations[0].x1 / downloadedImage.width,
+        x2: textAnnotations[textAnnotations.length - 1].x2 / downloadedImage.width,
+        y1: textAnnotations[0].y1 / downloadedImage.height,
+        y2: textAnnotations[textAnnotations.length - 1].y2 / downloadedImage.height,
         type: [currentTextAnnotationType.current],
         subRegions: textAnnotations.map(el => ({
           x1: el.x1 / downloadedImage.width,
@@ -310,9 +336,17 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, publicationId, onSc
           text: el.text
         }))
     };
+    if(isAnnotationTextEditMode){
+      var index = selectedAnnotationsIndex[0].subRegionIndex;
+      currentTextAnnotationParent.current.data.subRegions.splice(index,1);
+    }
+    if(currentTextAnnotationParent.current.data.subRegions === null)
+      currentTextAnnotationParent.current.data.subRegions = [];
     currentTextAnnotationParent.current.data.subRegions.push(subregion);
     onAnnotationsChange();
+    setSelectedAnnotationsIndex(null);
     setAnnotationTextMode(false);
+    setAnnotationTextEditMode(false);
   };
 
   return <div>
@@ -327,6 +361,7 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, publicationId, onSc
                 selectedAnnotationsIndex={selectedAnnotationsIndex}
                 showModal={showAnnotationsInfoModal}
                 isAnnotationTextMode={isAnnotationTextMode}
+                isAnnotationTextEditMode={isAnnotationTextEditMode}
                 textAnnotations={scaleUpTextAnnotations()}
                 onSaveTextAnnotation={onSaveTextAnnotation}
       />

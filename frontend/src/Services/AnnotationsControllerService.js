@@ -121,6 +121,24 @@ export default class AnnotationsControllerService {
 
   deleteSelectedAnnotations() {
     const updatedAnnotations = _.cloneDeep(this.annotations);
+    this.selectedAnnotations.sort(function (a, b) {
+      if (a.subRegionIndex > b.subRegionIndex) {
+          return -1;
+      }
+      if (b.subRegionIndex > a.subRegionIndex) {
+          return 1;
+      }
+      return 0;
+    });
+    this.selectedAnnotations.sort(function (a, b) {
+      if (a.annotationIndex > b.annotationIndex) {
+          return -1;
+      }
+      if (b.annotationIndex > a.annotationIndex) {
+          return 1;
+      }
+      return 0;
+    });
     for(var i=0; i<this.selectedAnnotations.length; i++){
       var selected = this.selectedAnnotations[i];
       if(selected.subRegionIndex == null)

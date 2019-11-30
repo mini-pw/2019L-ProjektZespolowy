@@ -94,6 +94,26 @@ class DrawingCanvas extends Component {
         }
       );
     }
+    if(this.props.isAnnotationTextEditMode && this.props.isAnnotationTextEditMode !== prevProps.isAnnotationTextEditMode){
+      var index = this.props.selectedAnnotations[0].annotationIndex;
+      var subindex = this.props.selectedAnnotations[0].subRegionIndex;
+      var subregion = this.props.annotations[index].subRegions[subindex];
+      var indexes = [];
+      var selected = [];
+      subregion.subRegions.forEach((el) => {
+        var index = this.props.textAnnotations.findIndex(text => text.x1===el.x1 && text.x2===el.x2 && text.y1===el.y1 && text.y2===el.y2);
+        if(index>-1){
+          indexes.push(index);
+          selected.push(this.props.textAnnotations[index]);
+        }
+      });
+      this.setState(
+        {
+          selectedTextAnnotations: selected,
+          selectedTextAnnotationsPrevIndexes: indexes
+        }
+      );
+    }
   }
 
   componentWillUnmount() {
@@ -115,7 +135,7 @@ class DrawingCanvas extends Component {
     for(var i=0; i<annotations.length; i++){
       var index = annotations[i].annotationIndex;
       var subindex = annotations[i].subRegionIndex;
-      if(!subindex)
+      if(subindex==null)
        continue;
       var subregion = this.props.annotations[index].subRegions[subindex];
       if(this.isTextAnnotation(subregion.type)){
@@ -153,32 +173,39 @@ class DrawingCanvas extends Component {
   handleMouseMove = (event) => {
     const { isDragging } = this.state;
 
-    if (!isDragging) {
+    if (!isDragging || !this.stage.getPointerPosition()) {
       return;
     }
-    var x1 = Math.min(this.state.originalX, this.stage.getPointerPosition().x);
-    var x2 = Math.max(this.state.originalX, this.stage.getPointerPosition().x);
-    var y1 = Math.min(this.state.originalY, this.stage.getPointerPosition().y);
-    var y2 = Math.max(this.state.originalY, this.stage.getPointerPosition().y);
-    var selected = [];
-    var indexes = [];
+    var selected;
+    var indexes;
+    var x = this.stage.getPointerPosition().x;
+    var y = this.stage.getPointerPosition().y;
     for(var i=0; i<this.props.textAnnotations.length; i++){
       var el = this.props.textAnnotations[i];
-      if(x1<el.x2 && x2>el.x1 && y2>el.y1 && y1<el.y2) {
-        if(event.ctrlKey && this.state.selectedTextAnnotations.indexOf(el) >= 0)
-          continue;
-        selected.push(el);
-        indexes.push(i);
+      if(el.x1===0 || el.x2===0 || el.y1===0 || el.y2===0)
+        continue;
+      if(el.x1<x && el.x2>x && el.y1<y && el.y2>y) {
+        var isSelected = this.state.selectedTextAnnotations.indexOf(el) > -1;
+        if(!isSelected && !event.ctrlKey) {
+          selected = this.state.selectedTextAnnotations.concat(el);
+          indexes = this.state.selectedTextAnnotationsPrevIndexes.concat(i);
+        }
+        if(event.ctrlKey && isSelected) {
+          var index = this.state.selectedTextAnnotationsPrevIndexes.indexOf(i);
+          selected = this.state.selectedTextAnnotations.filter((item, j) => index !== j);
+          indexes = this.state.selectedTextAnnotationsPrevIndexes.filter((item, j) => index !== j);
+        }
+        break;
       }
     }
-    if(event.ctrlKey)
-      selected = selected.concat(this.state.selectedTextAnnotations);
-    this.setState(
-      {
-        selectedTextAnnotations: selected,
-        selectedTextAnnotationsPrevIndexes: indexes
-      }
-    );
+    if(selected){
+      this.setState(
+        {
+          selectedTextAnnotations: selected,
+          selectedTextAnnotationsPrevIndexes: indexes
+        }
+      );
+    }
   };
 
   handleMouseUp = () => {
@@ -196,12 +223,38 @@ class DrawingCanvas extends Component {
       }
     );
   };
+
+  sortTextAnnotations = () => {
+    var sorted = this.state.selectedTextAnnotations;
+    var indexes = this.state.selectedTextAnnotationsPrevIndexes;
+    var swapp;
+    var n = indexes.length-1;
+    do {
+        swapp = false;
+        for (var i=0; i < n; i++)
+        {
+            if (indexes[i] > indexes[i+1])
+            {
+               var temp = indexes[i];
+               indexes[i] = indexes[i+1];
+               indexes[i+1] = temp;
+               temp = sorted[i];
+               sorted[i] = sorted[i+1];
+               sorted[i+1] = temp;
+               swapp = true;
+            }
+        }
+        n--;
+    } while (swapp);
+    return sorted;
+  }
   
   saveTextAnnotation = () => {
-    this.props.onSaveTextAnnotation(this.state.selectedTextAnnotations);
+    this.props.onSaveTextAnnotation(this.sortTextAnnotations());
     this.setState(
       {
-        selectedTextAnnotations: []
+        selectedTextAnnotations: [],
+        selectedTextAnnotationsPrevIndexes: []
       }
     );
   }
@@ -225,7 +278,14 @@ class DrawingCanvas extends Component {
                     <React.Fragment key={ind}>
                       {type && type.length > 0 && <Text x={x1+5} y={y1+5} text={this.formatTypes(type)} fill={getColorByIndex(ind)} />}
                       {subRegions && subRegions.map(({x1, y1, type}, ind2) =>
-                        type && type.length > 0 && !this.isTextAnnotation(type) && <Text key={ind2} x={x1+5} y={y1+5} text={this.formatTypes(type)} fill={getColorByIndex(ind)}/> )}
+                        {
+                          if(type && type.length > 0){
+                            if(!this.isTextAnnotation(type))
+                              return <Text key={ind2} x={x1+5} y={y1+5} text={this.formatTypes(type)} fill={getColorByIndex(ind)}/> ;
+                            return <Text key={ind2} x={x1-2} y={y1-12} text={this.formatTypes(type)} fill={getColorByIndex(ind)}/> ;  
+                          }
+                        }
+                      )}
                     </React.Fragment>
         )}
         {this.props.annotations && this.props.annotations.map(({x1, y1, x2, y2, type, subRegions}, ind) =>
@@ -247,7 +307,7 @@ class DrawingCanvas extends Component {
                   if(this.isTextAnnotation(type)){
                     return <React.Fragment key={ind2}>
                               {subRegions && subRegions.map(({x1, y1, x2, y2}, ind3) =>
-                                    <Rect key={ind3} x={x1} y={y1} width={initRectSize} height={initRectSize} 
+                                    <Rect x={x1} y={y1} width={initRectSize} height={initRectSize} 
                                     onClick={(evt) => this.props.changeAnnotationIndex(ind, ind2, evt)}
                                     scaleX={(x2 - x1) / initRectSize}
                                     scaleY={(y2 - y1) / initRectSize}
@@ -279,7 +339,7 @@ class DrawingCanvas extends Component {
                 {
                     return <React.Fragment key={ind2}>
                               {subRegions && subRegions.map(({x1, y1, x2, y2}, ind3) =>
-                                    <Rect key={ind3} x={x1-2} y={y1-2} width={initRectSize+2} height={initRectSize+4} 
+                                    <Rect x={x1-2} y={y1-2} width={initRectSize+2} height={initRectSize+4} 
                                     scaleX={(x2 - x1 +2) / initRectSize}
                                     scaleY={(y2 - y1 +3) / initRectSize}
                                     stroke={'#63A2F5'}
