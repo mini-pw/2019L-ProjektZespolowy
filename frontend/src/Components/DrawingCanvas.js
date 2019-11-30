@@ -157,25 +157,7 @@ class DrawingCanvas extends Component {
     return false;
   }
 
-  handleMouseDown = (event) => {
-    if(!this.props.isAnnotationTextMode)
-      return;
-    window.addEventListener('mousemove', this.handleMouseMove);
-    window.addEventListener('mouseup', this.handleMouseUp);
-    this.stage = event.currentTarget.getStage();
-    this.setState({
-      originalX: this.stage.getPointerPosition().x,
-      originalY: this.stage.getPointerPosition().y,
-      isDragging: true
-    });
-  };
-  
-  handleMouseMove = (event) => {
-    const { isDragging } = this.state;
-
-    if (!isDragging || !this.stage.getPointerPosition()) {
-      return;
-    }
+  selectTextAnnotationOnClick = (event) => {
     var selected;
     var indexes;
     var x = this.stage.getPointerPosition().x;
@@ -206,6 +188,29 @@ class DrawingCanvas extends Component {
         }
       );
     }
+  }
+
+  handleMouseDown = (event) => {
+    if(!this.props.isAnnotationTextMode)
+      return;
+    window.addEventListener('mousemove', this.handleMouseMove);
+    window.addEventListener('mouseup', this.handleMouseUp);
+    this.stage = event.currentTarget.getStage();
+    this.selectTextAnnotationOnClick(event.evt);
+    this.setState({
+      originalX: this.stage.getPointerPosition().x,
+      originalY: this.stage.getPointerPosition().y,
+      isDragging: true
+    });
+  };
+  
+  handleMouseMove = (event) => {
+    const { isDragging } = this.state;
+
+    if (!isDragging || !this.stage.getPointerPosition()) {
+      return;
+    }
+    this.selectTextAnnotationOnClick(event);
   };
 
   handleMouseUp = () => {
