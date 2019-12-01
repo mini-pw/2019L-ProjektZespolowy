@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
-from publications.models import Publication, Page, Annotation, ANNOTATION_STATUS_AUTO, ANNOTATION_STATUS_SUPER, \
-    ANNOTATION_STATUS_MANUAL
+from publications.models import Publication, Page, Annotation, ObjectType, \
+    SubobjectType, AnnotationTag, \
+    ANNOTATION_STATUS_AUTO, ANNOTATION_STATUS_SUPER, ANNOTATION_STATUS_MANUAL
 from users.serializers import UserSerializer
 
 
@@ -76,3 +77,38 @@ class AnnotationSerializer(serializers.ModelSerializer):
         elif user.is_staff:
             return ANNOTATION_STATUS_MANUAL
         raise PermissionDenied
+
+
+class ObjectTypeSerializer(serializers.ModelSerializer):
+    parent_type = serializers.SerializerMethodField()
+
+    def get_parent_type(self, instance):
+        if instance.parent_type is not None:
+            return instance.parent_type.key
+        else:
+            return None
+
+    class Meta:
+        model = ObjectType
+        fields = ('name', 'key', 'parent_type', 'sortkey')
+
+
+class SubobjectTypeSerializer(serializers.ModelSerializer):
+    valid_on = serializers.SerializerMethodField()
+
+    def get_valid_on(self, instance):
+        keys = []
+        a = instance.valid_on.get_queryset()
+        for i in a:
+            keys.append(i.key)
+        return keys
+
+    class Meta:
+        model = SubobjectType
+        fields = ('name', 'key', 'valid_on', 'is_text_annotation', 'sortkey')
+
+
+class AnnotationTagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AnnotationTag
+        fields = ('name', 'key', 'sortkey')

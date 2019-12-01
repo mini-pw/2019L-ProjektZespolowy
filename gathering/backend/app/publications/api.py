@@ -9,8 +9,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from publications.filters import PublicationFilter, PageFilter, AnnotationFilter
-from publications.models import Publication, Page, Annotation
-from publications.serializers import PublicationSerializer, PageSerializer, PageOcrSerializer, AnnotationSerializer
+from publications.models import *
+from publications.serializers import *
 from publications.tasks import save_file_locally, perform_ocr
 from publications.pagination import SingleResultPagination
 
@@ -103,7 +103,7 @@ class GlobalStatistics(APIView):
         })
 
 
-class Ocr(ListAPIView):
+class OcrListView(ListAPIView):
     queryset = Page.objects.all()
     serializer_class = PageOcrSerializer
     filterset_class = PageFilter
@@ -118,3 +118,18 @@ class OcrTaskRequest(APIView):
             return Response(True)
 
         return Response(False)
+
+
+class ObjectTypeListView(ListAPIView):
+    queryset = ObjectType.objects.all()
+    serializer_class = ObjectTypeSerializer
+
+
+class SubobjectTypeListView(ListAPIView):
+    queryset = SubobjectType.objects.all()
+    serializer_class = SubobjectTypeSerializer
+
+
+class AnnotationTagListView(ListAPIView):
+    queryset = AnnotationTag.objects.all()
+    serializer_class = AnnotationTagSerializer
