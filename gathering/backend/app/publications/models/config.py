@@ -1,27 +1,39 @@
 from django.db import models
 
-class ObjectType(models.Model):
+class SubobjectType(models.Model):
+    ORIENTATION_NEUTRAL = 'neutral'
+    ORIENTATION_VERTICAL = 'vertical'
+    ORIENTATION_HORIZONTAL = 'horizontal'
+
     name = models.CharField(max_length=512)
     key = models.CharField(max_length=512)
-    parent_type = models.ForeignKey('ObjectType', null=True, blank=True, on_delete=models.PROTECT)
     sortkey = models.IntegerField(default=0)
+    is_text_annotation = models.BooleanField(default=False)
+    orientation = models.CharField(
+        max_length=32,
+        choices=(
+            (ORIENTATION_NEUTRAL, "Neutral"),
+            (ORIENTATION_VERTICAL, "Vertical"),
+            (ORIENTATION_HORIZONTAL, "Horizontal")
+        ), default=ORIENTATION_NEUTRAL
+    )
 
     def __str__(self):
-        return 'Object type: ' + self.name
+        return 'Subobject type: ' + self.name
 
     class Meta:
         ordering = ['sortkey', 'key']
 
 
-class SubobjectType(models.Model):
+class ObjectType(models.Model):
     name = models.CharField(max_length=512)
     key = models.CharField(max_length=512)
-    valid_on = models.ManyToManyField(ObjectType)
+    parent_type = models.ForeignKey('ObjectType', null=True, blank=True, on_delete=models.PROTECT)
+    subtypes = models.ManyToManyField(SubobjectType)
     sortkey = models.IntegerField(default=0)
-    is_text_annotation = models.BooleanField(default=False)
 
     def __str__(self):
-        return 'Subobject type: ' + self.name
+        return 'Object type: ' + self.name
 
     class Meta:
         ordering = ['sortkey', 'key']

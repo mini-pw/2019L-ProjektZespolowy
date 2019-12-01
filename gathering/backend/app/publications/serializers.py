@@ -79,8 +79,15 @@ class AnnotationSerializer(serializers.ModelSerializer):
         raise PermissionDenied
 
 
+class SubobjectTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubobjectType
+        fields = ('name', 'key', 'is_text_annotation', 'orientation', 'sortkey')
+
+
 class ObjectTypeSerializer(serializers.ModelSerializer):
     parent_type = serializers.SerializerMethodField()
+    subtypes = serializers.SerializerMethodField()
 
     def get_parent_type(self, instance):
         if instance.parent_type is not None:
@@ -88,24 +95,13 @@ class ObjectTypeSerializer(serializers.ModelSerializer):
         else:
             return None
 
+    def get_subtypes(self, instance):
+        qs = instance.subtypes.all()
+        return SubobjectTypeSerializer(qs, many=True, read_only=True).data
+
     class Meta:
         model = ObjectType
-        fields = ('name', 'key', 'parent_type', 'sortkey')
-
-
-class SubobjectTypeSerializer(serializers.ModelSerializer):
-    valid_on = serializers.SerializerMethodField()
-
-    def get_valid_on(self, instance):
-        keys = []
-        a = instance.valid_on.get_queryset()
-        for i in a:
-            keys.append(i.key)
-        return keys
-
-    class Meta:
-        model = SubobjectType
-        fields = ('name', 'key', 'valid_on', 'is_text_annotation', 'sortkey')
+        fields = ('name', 'key', 'parent_type', 'subtypes', 'sortkey')
 
 
 class AnnotationTagSerializer(serializers.ModelSerializer):
