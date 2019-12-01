@@ -62,7 +62,7 @@ export default class AnnotationsService {
     const updatedAnnotations = annotations
       .map((a) => (
         {annotation: a.data, pageId, annotationsUsed: [], tags: a.tags.map(t => t.value)}));
-    if(annotations.length == 0){ //delete all annotations for page
+    if(annotations.length === 0){ //delete all annotations for page
       updatedAnnotations.push({annotation: null, pageId, annotationsUsed: null, tags: null});
     }
     const res = await fetch(`${apiUrl}/annotations/new`, {

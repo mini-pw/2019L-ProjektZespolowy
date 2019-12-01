@@ -1,9 +1,9 @@
 import React, {Component} from 'react';
 import {Image, Layer, Rect, Text, Transformer} from 'react-konva';
-import {availableTypes, availableSubTypes} from '../common';
 import {Fab} from '@material-ui/core';
 import {Check} from '@material-ui/icons';
 import DeleteIcon from '@material-ui/icons/Delete';
+import {ServiceContext} from '../Services/SeviceContext';
 import Portal from './Portal';
 
 const getColorByIndex = (ind) => {
@@ -83,6 +83,12 @@ class DrawingCanvas extends Component {
     originalX: 0,
     originalY: 0
   };
+  static contextType = ServiceContext;
+
+  async componentDidMount() {  
+    var types = await this.props.publicationsService.getTypes();
+    this.availableTypes = types;
+  }
 
   componentDidUpdate(prevProps) {
     if (this.props.annotations !== prevProps.annotations && !this.state.isDragging && this.state.selectedTextAnnotations && this.state.selectedTextAnnotations.length) {
@@ -146,15 +152,32 @@ class DrawingCanvas extends Component {
   }
 
   formatTypes(types) {
-    var allTypes = availableTypes.concat(availableSubTypes);
+    var allTypes = this.availableTypes;
+    this.availableTypes.forEach(type => {
+      if(type.subtypes){
+        allTypes = allTypes.concat(type.subtypes);
+      }
+    });
     return types.map(type => allTypes.find(({value}) => value === type).name).join(',');
   }
 
   isTextAnnotation(types) {
-    var type = types.join();
-    if(type.includes('cell') || type.includes('title') || type.includes('text'))
-      return true;
-    return false;
+    var isTextAnnotation = null;
+    for(var i=0; i<this.availableTypes.length; i++){
+      var type = this.availableTypes[i];
+      if(type.subtypes){
+        for(var j=0; j<type.subtypes.length; j++){
+          var subtype = type.subtypes[j];
+          if(subtype.value === types[0]){
+            isTextAnnotation = subtype.isTextAnnotation;
+            break;
+          }
+        }
+      }
+      if(isTextAnnotation !== null)
+        break;
+    }
+    return isTextAnnotation;
   }
 
   selectTextAnnotationOnClick = (event) => {

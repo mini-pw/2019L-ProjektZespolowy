@@ -5,6 +5,7 @@ const apiUrl = 'http://annotations.mini.pw.edu.pl/api/annotations'; //'http://lo
 export default class PublicationsService {
   constructor(authService) {
     this.authService = authService;
+    this.types = null;
   }
 
   get headers() {
@@ -106,5 +107,94 @@ export default class PublicationsService {
       headers: this.headers
     });
     return data.results[0].ocr;
+  }
+
+  async getTypes() {
+    await this.authService.ensureLoggedIn();
+    if(this.types == null){
+      /*const types = await fetchBody(`${apiUrl}/publications/types`, {
+        headers: this.headers
+      });*/
+      this.types = [
+        {
+          name: "Plot", 
+          value: "plot",
+          subtypes: [
+            {name: "Title", value: "title", isTextAnnotation: true},
+            {name: "X axis", value: "x_axis", isTextAnnotation: false, orientation: 'horizontal'},
+            {name: "Title of x axis", value: "x_axis_title", isTextAnnotation: true},
+            {name: "Y axis", value: "y_axis", isTextAnnotation: false, orientation: 'vertical'},
+            {name: "Title of y axis", value: "y_axis_title", isTextAnnotation: true},
+            {name: "Text annotation", value: "text_annotation", isTextAnnotation: true}
+          ]
+        },
+        {
+          name: "Chart", 
+          value: "chart",
+          parent: "plot"
+        },
+        {
+          name: "Linear plot", 
+          value: "linear_plot",
+          parent: "plot"
+        },
+        {
+          name: "Pie chart", 
+          value: "pie_chart",
+          parent: "plot"
+        },
+        {
+          name: "Dot plot", 
+          value: "dot_plot",
+          parent: "plot"
+        },
+        {
+          name: "Column plot", 
+          value: "column_plot",
+          parent: "plot"
+        },
+        {
+          name: "Box plot", 
+          value: "box_plot",
+          parent: "plot"
+        },
+        {
+          name: "Other plot", 
+          value: "other_plot",
+          parent: "plot"
+        },
+        {
+          name: "Table", 
+          value: "table",
+          subtypes: [
+            {name: "Cell", value: "cell", isTextAnnotation: true},
+            {name: "Title", value: "title", isTextAnnotation: true},
+            {name: "Row", value: "row", isTextAnnotation: false, orientation: 'horizontal'},
+            {name: "Row Title", value: "row_title", isTextAnnotation: true},
+            {name: "Column", value: "column", isTextAnnotation: false, orientation: 'vertical'},
+            {name: "Column Title", value: "column_title", isTextAnnotation: true},
+            {name: "Text annotation", value: "text_annotation", isTextAnnotation: true}
+          ]
+        },
+        {
+          name: "ChaTa reference", 
+          value: "chata_reference"
+        },
+        {
+          name: "Image", 
+          value: "image"
+        },
+        {
+          name: "Algorithm", 
+          value: "algorithm"
+        },
+        {
+          name: "Diagram", 
+          value: "diagram"
+        }
+      ];
+    }
+    
+    return this.types;
   }
 }

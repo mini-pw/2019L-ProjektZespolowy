@@ -39,9 +39,15 @@ export default class AnnotationsControllerService {
     this.stack.push(entity);
   }
 
-  constructor(messageService) {
+  constructor(messageService, publicationsService) {
     this.messageService = messageService;
+    this.getTypes(publicationsService);
     this.stack = new Stack();
+  }
+
+  async getTypes(publicationsService){
+    var types = await publicationsService.getTypes();
+    this.availableTypes = types;
   }
 
   selectAnnotation(pageIndex, annotationIndex, subRegionIndex) {
@@ -70,6 +76,7 @@ export default class AnnotationsControllerService {
   async addAnnotationToPage(pageIndex, newAnnotation, showModal) {
     if (showModal) {
       const setAnnotationData = async (newAnnotation) => new Promise(resolve => {
+        var availableTypes = this.availableTypes;
         Popup.registerPlugin('prompt', function (callback) {
           let defaultType = [];
           newAnnotation.data.type = defaultType;
@@ -87,7 +94,7 @@ export default class AnnotationsControllerService {
   
           this.create({
             title: 'New annotation',
-            content: <Prompt type={defaultType} text="" tags={[]} onChange={promptChange}/>,
+            content: <Prompt availableTypes={availableTypes} type={defaultType} text="" tags={[]} onChange={promptChange}/>,
             buttons: {
               left: ['cancel'],
               right: [
@@ -156,6 +163,7 @@ export default class AnnotationsControllerService {
     }
     const [{pageIndex, annotationIndex}] = this.selectedAnnotations;
     const setAnnotationData = async () => new Promise(resolve => {
+      var availableTypes = this.availableTypes;
       Popup.registerPlugin('prompt', function (defaultType, defaultText, defaultTags, callback) {
         let promptType = null;
         let promptText = null;
@@ -169,7 +177,7 @@ export default class AnnotationsControllerService {
 
         this.create({
           title: 'Zmień adnotację',
-          content: <Prompt type={defaultType} text={defaultText} tags={defaultTags} onChange={promptChange}/>,
+          content: <Prompt availableTypes={availableTypes} type={defaultType} text={defaultText} tags={defaultTags} onChange={promptChange}/>,
           buttons: {
             left: ['cancel'],
             right: [
@@ -204,21 +212,21 @@ export default class AnnotationsControllerService {
   }
 
   deleteSubRegionsWhenTypeChanges(newAnnotations, pageIndex, annotationIndex){
-    var originalType = this.annotations[pageIndex][annotationIndex].data.type.toString();
-    var isChartOriginal = this.checkIfChart(originalType);
-    var isTableOriginal = !isChartOriginal && this.checkIfTable(originalType);
-    var newType = newAnnotations[pageIndex][annotationIndex].data.type.toString();
-    var isChartNew = this.checkIfChart(newType);
-    var isTableNew = !isChartNew && this.checkIfTable(newType);
-    if((isChartOriginal && !isChartNew) || (isTableOriginal && !isTableNew))
-      newAnnotations[pageIndex][annotationIndex].data.subRegions = [];
+    var newTypes = newAnnotations[pageIndex][annotationIndex].data.type;
+    var subregions = [];
+    newTypes.forEach(type => {
+      var availableType = this.availableTypes.find(el => el.value === type);
+      if(!availableType.subtypes && availableType.parent){
+        availableType = this.availableTypes.find(el => el.value === availableType.parent);
+      }
+      if(availableType.subtypes){
+        subregions = subregions.concat(availableType.subtypes.filter((item) => subregions.findIndex(subregion => subregion.value === item.value) < 0));
+      }
+    });
+    var regions = newAnnotations[pageIndex][annotationIndex].data.subRegions;
+    regions = regions.filter((item) => subregions.findIndex(subregion => subregion.value === item.type[0]) >= 0);
+    newAnnotations[pageIndex][annotationIndex].data.subRegions = regions;
     return newAnnotations;
-  }
-  checkIfChart(type){
-    return type.toLowerCase().includes('plot') || type.toLowerCase().includes('chart');
-  }
-  checkIfTable(type){
-    return type.toLowerCase().includes('table');
   }
 
   copySelectedAnnotations(copyOffset) {
