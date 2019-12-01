@@ -19,7 +19,7 @@ class SubobjectType(models.Model):
     )
 
     def __str__(self):
-        return 'Subobject type: ' + self.name
+        return self.name
 
     class Meta:
         ordering = ['sortkey', 'key']
@@ -29,11 +29,11 @@ class ObjectType(models.Model):
     name = models.CharField(max_length=512)
     key = models.CharField(max_length=512)
     parent_type = models.ForeignKey('ObjectType', null=True, blank=True, on_delete=models.PROTECT)
-    subtypes = models.ManyToManyField(SubobjectType)
+    subtypes = models.ManyToManyField(SubobjectType, blank=True)
     sortkey = models.IntegerField(default=0)
 
     def __str__(self):
-        return 'Object type: ' + self.name
+        return self.name
 
     class Meta:
         ordering = ['sortkey', 'key']
@@ -45,7 +45,7 @@ class AnnotationTag(models.Model):
     sortkey = models.IntegerField(default=0)
 
     def __str__(self):
-        return 'Annotation tag: ' + self.name
+        return self.name
 
     class Meta:
         ordering = ['sortkey', 'key']
