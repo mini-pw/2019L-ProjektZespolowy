@@ -26,7 +26,7 @@ const MyMenu = ({annotations, onNewAdnotationClick, onConnectAnnotationClick, on
       subRegionIndex = selectedAnnotationsIndex[0].subRegionIndex;
       currentAnnotation.data.type.forEach(type => {
         var availableType = availableTypes.find(el => el.value === type);
-        if(!availableType.subtypes && availableType.parent){
+        if(availableType.parent){
           availableType = availableTypes.find(el => el.value === availableType.parent);
         }
         if(availableType.subtypes){

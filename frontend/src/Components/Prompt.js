@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
 import ReactTags from 'react-tag-autocomplete';
-import {availableTags} from '../common';
 import InfoIcon from "./InfoIcon";
 
 export default class Prompt extends Component {
@@ -90,14 +89,14 @@ export default class Prompt extends Component {
       />
       Tags:<InfoIcon
         title='Available tags:'
-        items={availableTags.map(t => t.name)}
+        items={this.props.availableTags.map(t => t.name)}
         id='tags'
       />
       <ReactTags
         minQueryLength={1}
         placeholderText={'Add new tag'}
         tags={this.state.tags}
-        suggestions={availableTags}
+        suggestions={this.props.availableTags}
         onValidate={this.onValidateTag.bind(this)}
         onDelete={this.onDeleteTag.bind(this)}
         onAddition={this.onAddTag.bind(this)}

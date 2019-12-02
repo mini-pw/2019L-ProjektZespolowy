@@ -41,13 +41,18 @@ export default class AnnotationsControllerService {
 
   constructor(messageService, publicationsService) {
     this.messageService = messageService;
-    this.getTypes(publicationsService);
+    this.publicationsService = publicationsService;
     this.stack = new Stack();
   }
 
-  async getTypes(publicationsService){
-    var types = await publicationsService.getTypes();
+  async getTypes(){
+    var types = await this.publicationsService.getTypes();
     this.availableTypes = types;
+  }
+
+  async getTags(){
+    var tags = await this.publicationsService.getTags();
+    this.availableTags = tags;
   }
 
   selectAnnotation(pageIndex, annotationIndex, subRegionIndex) {
@@ -75,8 +80,15 @@ export default class AnnotationsControllerService {
 
   async addAnnotationToPage(pageIndex, newAnnotation, showModal) {
     if (showModal) {
+      if(!this.availableTypes){
+        await this.getTypes();
+      }
+      if(!this.availableTags){
+        await this.getTags();
+      }
       const setAnnotationData = async (newAnnotation) => new Promise(resolve => {
         var availableTypes = this.availableTypes;
+        var availableTags = this.availableTags;
         Popup.registerPlugin('prompt', function (callback) {
           let defaultType = [];
           newAnnotation.data.type = defaultType;
@@ -94,7 +106,7 @@ export default class AnnotationsControllerService {
   
           this.create({
             title: 'New annotation',
-            content: <Prompt availableTypes={availableTypes} type={defaultType} text="" tags={[]} onChange={promptChange}/>,
+            content: <Prompt availableTags={availableTags} availableTypes={availableTypes} type={defaultType} text="" tags={[]} onChange={promptChange}/>,
             buttons: {
               left: ['cancel'],
               right: [
@@ -161,9 +173,16 @@ export default class AnnotationsControllerService {
     if (this.selectedAnnotations.length !== 1) {
       throw new Error('Only one annotation must be selected for edit');
     }
+    if(!this.availableTypes){
+      await this.getTypes();
+    }
+    if(!this.availableTags){
+      await this.getTags();
+    }
     const [{pageIndex, annotationIndex}] = this.selectedAnnotations;
     const setAnnotationData = async () => new Promise(resolve => {
       var availableTypes = this.availableTypes;
+      var availableTags = this.availableTags;
       Popup.registerPlugin('prompt', function (defaultType, defaultText, defaultTags, callback) {
         let promptType = null;
         let promptText = null;
@@ -177,7 +196,7 @@ export default class AnnotationsControllerService {
 
         this.create({
           title: 'Zmień adnotację',
-          content: <Prompt availableTypes={availableTypes} type={defaultType} text={defaultText} tags={defaultTags} onChange={promptChange}/>,
+          content: <Prompt availableTags={availableTags} availableTypes={availableTypes} type={defaultType} text={defaultText} tags={defaultTags} onChange={promptChange}/>,
           buttons: {
             left: ['cancel'],
             right: [
@@ -224,7 +243,8 @@ export default class AnnotationsControllerService {
       }
     });
     var regions = newAnnotations[pageIndex][annotationIndex].data.subRegions;
-    regions = regions.filter((item) => subregions.findIndex(subregion => subregion.value === item.type[0]) >= 0);
+    if(regions)
+      regions = regions.filter((item) => subregions.findIndex(subregion => subregion.value === item.type[0]) >= 0);
     newAnnotations[pageIndex][annotationIndex].data.subRegions = regions;
     return newAnnotations;
   }

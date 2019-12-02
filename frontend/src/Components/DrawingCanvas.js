@@ -152,6 +152,9 @@ class DrawingCanvas extends Component {
   }
 
   formatTypes(types) {
+    if(!this.availableTypes){
+      this.availableTypes = this.props.publicationsService.types;
+    }
     var allTypes = this.availableTypes;
     this.availableTypes.forEach(type => {
       if(type.subtypes){

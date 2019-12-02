@@ -14,7 +14,7 @@ export function setup () {
   return {
     authService,
     publicationsService: publicationsService,
-    annotationsService: new AnnotationsService(authService, annotationsControllerService),
+    annotationsService: new AnnotationsService(authService, annotationsControllerService, publicationsService),
     helperService: new HelperService(),
     annotationsControllerService,
     messageService
