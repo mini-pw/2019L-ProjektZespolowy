@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
 sleep 10; # wait for database
-python manage.py migrate
-python manage.py collectstatic
-python manage.py runserver 0.0.0.0:8000
+python3 manage.py migrate
+python3 manage.py collectstatic --noinput
+python3 manage.py runserver 0.0.0.0:8000
