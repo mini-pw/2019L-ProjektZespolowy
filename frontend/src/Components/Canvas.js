@@ -26,10 +26,10 @@ const MyMenu = ({annotations, onNewAdnotationClick, onConnectAnnotationClick, on
       subRegionIndex = selectedAnnotationsIndex[0].subRegionIndex;
       currentAnnotation.data.type.forEach(type => {
         var availableType = availableTypes.find(el => el.value === type);
-        if(availableType.parent){
+        if(availableType && availableType.parent){
           availableType = availableTypes.find(el => el.value === availableType.parent);
         }
-        if(availableType.subtypes){
+        if(availableType && availableType.subtypes){
           subregions = subregions.concat(availableType.subtypes.filter((item) => subregions.findIndex(subregion => subregion.value === item.value) < 0));
         }
       });

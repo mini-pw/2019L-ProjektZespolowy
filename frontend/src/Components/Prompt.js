@@ -11,7 +11,15 @@ export default class Prompt extends Component {
       text: this.props.text,
       tags: this.props.tags
     };
-    this.props.onChange(this.state.type.map(type => type.value), this.state.text, this.state.tags);
+    var typeState = this.state.type.map(type => {
+        if(type)
+          return type.value;
+        return null;
+      });
+    if(!typeState){
+      typeState = this.props.availableTypes[0];
+    }
+    this.props.onChange(typeState, this.state.text, this.state.tags);
   }
 
   componentDidUpdate(prevProps, prevState) {

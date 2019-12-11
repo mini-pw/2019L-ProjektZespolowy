@@ -220,9 +220,15 @@ export default class AnnotationsControllerService {
         updatedAnnotations[pageIndex][annotationIndex].tags = tags;
         resolve(updatedAnnotations);
       };
-      const originalType = this.annotations[pageIndex][annotationIndex].data.type;
+      let originalType = this.annotations[pageIndex][annotationIndex].data.type;
       const originalText = this.annotations[pageIndex][annotationIndex].data.text;
       const originalTags = this.annotations[pageIndex][annotationIndex].tags;
+      for(var i=originalType.length-1; i>=0; i--){
+        var found = availableTypes.findIndex(el => el.value === originalType[i]);
+        if(found === -1)
+          originalType.splice(i, 1);
+      }
+
       Popup.plugins().prompt(originalType, originalText, originalTags, updateAnnotation);
     });
 
