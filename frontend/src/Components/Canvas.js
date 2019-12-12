@@ -321,15 +321,15 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, publicationId, onSc
       setAnnotationTextEditMode(false);
       return;
     }
-
+    var subregion, index;
     if(isAnnotationTextEditMode){
-      var index = selectedAnnotationsIndex[0].annotationIndex;
+      index = selectedAnnotationsIndex[0].annotationIndex;
       var subindex = selectedAnnotationsIndex[0].subRegionIndex;
-      var subregion = annotations[index].data.subRegions[subindex];
+      subregion = annotations[index].data.subRegions[subindex];
       currentTextAnnotationParent.current = annotations[index];
       currentTextAnnotationType.current = subregion.type[0];
     }
-    var subregion = {
+    subregion = {
         x1: textAnnotations[0].x1 / downloadedImage.width,
         x2: textAnnotations[textAnnotations.length - 1].x2 / downloadedImage.width,
         y1: textAnnotations[0].y1 / downloadedImage.height,
@@ -344,7 +344,7 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, publicationId, onSc
         }))
     };
     if(isAnnotationTextEditMode){
-      var index = selectedAnnotationsIndex[0].subRegionIndex;
+      index = selectedAnnotationsIndex[0].subRegionIndex;
       currentTextAnnotationParent.current.data.subRegions.splice(index,1);
     }
     if(currentTextAnnotationParent.current.data.subRegions === null)

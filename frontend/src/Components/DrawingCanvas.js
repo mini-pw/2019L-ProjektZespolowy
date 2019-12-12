@@ -94,8 +94,8 @@ class DrawingCanvas extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    var selected = [];
     if (this.props.annotations !== prevProps.annotations && !this.state.isDragging && this.state.selectedTextAnnotations && this.state.selectedTextAnnotations.length) {
-      var selected = [];
       this.state.selectedTextAnnotationsPrevIndexes.forEach(index => selected.push(this.props.textAnnotations[index]));
       this.setState(
         {
@@ -108,9 +108,8 @@ class DrawingCanvas extends Component {
       var subindex = this.props.selectedAnnotations[0].subRegionIndex;
       var subregion = this.props.annotations[index].subRegions[subindex];
       var indexes = [];
-      var selected = [];
       subregion.subRegions.forEach((el) => {
-        var index = this.props.textAnnotations.findIndex(text => text.x1===el.x1 && text.x2===el.x2 && text.y1===el.y1 && text.y2===el.y2);
+        var index = this.props.textAnnotations.findIndex(text => Math.round(text.x1 * 1000)===Math.round(el.x1 * 1000) && Math.round(text.x2 * 1000)===Math.round(el.x2 * 1000) && Math.round(text.y1 * 1000)===Math.round(el.y1 * 1000) && Math.round(text.y2 * 1000)===Math.round(el.y2 * 1000));
         if(index>-1){
           indexes.push(index);
           selected.push(this.props.textAnnotations[index]);
@@ -159,6 +158,8 @@ class DrawingCanvas extends Component {
       this.availableTypes = this.props.publicationsService.types;
     }
     var allTypes = this.availableTypes;
+    if(!allTypes)
+      return;
     this.availableTypes.forEach(type => {
       if(type.subtypes){
         allTypes = allTypes.concat(type.subtypes);
@@ -173,6 +174,8 @@ class DrawingCanvas extends Component {
   }
 
   isTextAnnotation(types) {
+    if(!this.availableTypes)
+      return false;
     var isTextAnnotation = null;
     for(var i=0; i<this.availableTypes.length; i++){
       var type = this.availableTypes[i];
@@ -200,13 +203,14 @@ class DrawingCanvas extends Component {
   }
 
   selectTextAnnotationOnClick = (event, x1, x2, y1, y2) => {
-    if ((isMac && !event.metaKey) || (!isMac && !event.ctrlKey))
+    if (((isMac && !event.metaKey) || (!isMac && !event.ctrlKey)) && !event.shiftKey)
       this.prevSelected = [];
     var selected = [];
     var indexes = [];
     var firstIndex = null;
     var secondIndex = null;
-    for(var i=0; i<this.props.textAnnotations.length; i++){
+    var i;
+    for(i=0; i<this.props.textAnnotations.length; i++){
       var el = this.props.textAnnotations[i];
       if(firstIndex === null && el.x1<x1 && el.x2>x1 && el.y1<y1 && el.y2>y1){
         firstIndex = i;
@@ -230,12 +234,14 @@ class DrawingCanvas extends Component {
     var minIndex = Math.min(secondIndex, firstIndex);
     var maxIndex = Math.max(secondIndex, firstIndex);
     indexes = [];
-    for(var i = minIndex; i<=maxIndex; i++)
+    for(i = minIndex; i<=maxIndex; i++)
       indexes.push(i);
     if ((isMac && event.metaKey) || (!isMac && event.ctrlKey))
       indexes = indexes.concat(this.prevSelected.filter((item) => indexes.indexOf(item) < 0));
+    else if(event.shiftKey)
+      indexes = this.prevSelected.filter((item) => indexes.indexOf(item) < 0);
     selected = [];
-    for(var i = 0; i< indexes.length; i++)
+    for(i = 0; i< indexes.length; i++)
       selected.push(this.props.textAnnotations[indexes[i]]);
     if(selected){
       this.setState(
