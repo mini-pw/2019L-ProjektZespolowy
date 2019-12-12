@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
 import ReactTags from 'react-tag-autocomplete';
-import {availableTags, availableTypes} from '../common';
 import InfoIcon from "./InfoIcon";
 
 export default class Prompt extends Component {
@@ -8,11 +7,19 @@ export default class Prompt extends Component {
     super(props);
 
     this.state = {
-      type: this.props.type.map(typeSlug => availableTypes.find(availableType => availableType.value === typeSlug)),
+      type: this.props.type.map(typeSlug => this.props.availableTypes.find(availableType => availableType.value === typeSlug)),
       text: this.props.text,
       tags: this.props.tags
     };
-    this.props.onChange(this.state.type.map(type => type.value), this.state.text, this.state.tags);
+    var typeState = this.state.type.map(type => {
+        if(type)
+          return type.value;
+        return null;
+      });
+    if(!typeState){
+      typeState = this.props.availableTypes[0];
+    }
+    this.props.onChange(typeState, this.state.text, this.state.tags);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -42,7 +49,7 @@ export default class Prompt extends Component {
 
   addBaseType(types, baseType, currentType) {
     if (currentType !== baseType && currentType.includes(baseType) && !this.state.type.find(t => t.value === baseType)) {
-      types.push(availableTypes.find(availableType => availableType.value === baseType));
+      types.push(this.props.availableTypes.find(availableType => availableType.value === baseType));
     }
   }
 
@@ -74,14 +81,14 @@ export default class Prompt extends Component {
     return <div className='prompt-content'>
       Type:<InfoIcon
         title='Available types:'
-        items={availableTypes.map(t => t.name)}
+        items={this.props.availableTypes.map(t => t.name)}
         id='types'
       />
       <ReactTags
         minQueryLength={1}
         placeholderText={'Add new type'}
         tags={this.state.type}
-        suggestions={availableTypes}
+        suggestions={this.props.availableTypes}
         onValidate={this.onValidateType.bind(this)}
         onDelete={this.onDeleteType.bind(this)}
         onAddition={this.onAddType.bind(this)}
@@ -90,14 +97,14 @@ export default class Prompt extends Component {
       />
       Tags:<InfoIcon
         title='Available tags:'
-        items={availableTags.map(t => t.name)}
+        items={this.props.availableTags.map(t => t.name)}
         id='tags'
       />
       <ReactTags
         minQueryLength={1}
         placeholderText={'Add new tag'}
         tags={this.state.tags}
-        suggestions={availableTags}
+        suggestions={this.props.availableTags}
         onValidate={this.onValidateTag.bind(this)}
         onDelete={this.onDeleteTag.bind(this)}
         onAddition={this.onAddTag.bind(this)}

@@ -173,7 +173,7 @@ describe('Testing AnnotationsControllerService', () => {
         [
             {
                 data: {
-                    type: 'table',
+                    type: ['table'],
                     subRegions: [{data: 'subregion1'}, {data: 'subregion2'}]
                 }
             },
@@ -189,7 +189,46 @@ describe('Testing AnnotationsControllerService', () => {
     ];
     annotationServiceController.annotations = annotations;
     var newAnnotations = _.cloneDeep(annotations);;
-    newAnnotations[0][0].data.type = 'x_axis';
+    newAnnotations[0][0].data.type = ['x_axis'];
+    annotationServiceController.availableTypes = 
+        [
+          {
+            name: "Plot", 
+            value: "plot",
+            subtypes: [
+              {name: "Title", value: "title", isTextAnnotation: true},
+              {name: "X axis", value: "x_axis", isTextAnnotation: false, orientation: 'horizontal'},
+              {name: "Title of x axis", value: "x_axis_title", isTextAnnotation: true},
+              {name: "Y axis", value: "y_axis", isTextAnnotation: false, orientation: 'vertical'},
+              {name: "Title of y axis", value: "y_axis_title", isTextAnnotation: true},
+              {name: "Text annotation", value: "text_annotation", isTextAnnotation: true}
+            ]
+          },
+          {
+            name: "Linear plot", 
+            value: "linear_plot",
+            parent: "plot"
+          },
+          {
+            name: "X axis", 
+            value: "x_axis",
+            parent: null
+          },
+          {
+            name: "Table", 
+            value: "table",
+            subtypes: [
+              {name: "Cell", value: "cell", isTextAnnotation: true},
+              {name: "Title", value: "title", isTextAnnotation: true},
+              {name: "Row", value: "row", isTextAnnotation: false, orientation: 'horizontal'},
+              {name: "Row Title", value: "row_title", isTextAnnotation: true},
+              {name: "Column", value: "column", isTextAnnotation: false, orientation: 'vertical'},
+              {name: "Column Title", value: "column_title", isTextAnnotation: true},
+              {name: "Text annotation", value: "text_annotation", isTextAnnotation: true}
+            ]
+          },
+        ];
+
 
     var array = annotationServiceController.deleteSubRegionsWhenTypeChanges(newAnnotations, 0, 0);
 
@@ -202,7 +241,7 @@ describe('Testing AnnotationsControllerService', () => {
         [
             {
                 data: {
-                    type: 'linear_plot',
+                    type: ['linear_plot'],
                     subRegions: [{data: 'subregion1'}, {data: 'subregion2'}]
                 }
             },
@@ -218,7 +257,32 @@ describe('Testing AnnotationsControllerService', () => {
     ];
     annotationServiceController.annotations = annotations;
     var newAnnotations = _.cloneDeep(annotations);;
-    newAnnotations[0][0].data.type = 'x_axis';
+    newAnnotations[0][0].data.type = ['x_axis'];
+    annotationServiceController.availableTypes = 
+        [
+          {
+            name: "Plot", 
+            value: "plot",
+            subtypes: [
+              {name: "Title", value: "title", isTextAnnotation: true},
+              {name: "X axis", value: "x_axis", isTextAnnotation: false, orientation: 'horizontal'},
+              {name: "Title of x axis", value: "x_axis_title", isTextAnnotation: true},
+              {name: "Y axis", value: "y_axis", isTextAnnotation: false, orientation: 'vertical'},
+              {name: "Title of y axis", value: "y_axis_title", isTextAnnotation: true},
+              {name: "Text annotation", value: "text_annotation", isTextAnnotation: true}
+            ]
+          },
+          {
+            name: "Linear plot", 
+            value: "linear_plot",
+            parent: "plot"
+          },
+          {
+            name: "X axis", 
+            value: "x_axis",
+            parent: null
+          }
+        ];
 
     var array = annotationServiceController.deleteSubRegionsWhenTypeChanges(newAnnotations, 0, 0);
 
@@ -231,8 +295,8 @@ describe('Testing AnnotationsControllerService', () => {
         [
             {
                 data: {
-                    type: 'linear_plot',
-                    subRegions: [{data: 'subregion1'}, {data: 'subregion2'}]
+                    type: ['linear_plot'],
+                    subRegions: [{data: 'subregion1', type: ['title']}, {data: 'subregion2', type: ['title']}]
                 }
             },
             {
@@ -246,40 +310,31 @@ describe('Testing AnnotationsControllerService', () => {
         ]
     ];
     annotationServiceController.annotations = annotations;
-    var newAnnotations = _.cloneDeep(annotations);;
-    newAnnotations[0][0].data.type = 'linear_plot';
-
+    var newAnnotations = _.cloneDeep(annotations);
+    newAnnotations[0][0].data.type = ['linear_plot'];
+    annotationServiceController.availableTypes = 
+        [
+          {
+            name: "Plot", 
+            value: "plot",
+            subtypes: [
+              {name: "Title", value: "title", isTextAnnotation: true},
+              {name: "X axis", value: "x_axis", isTextAnnotation: false, orientation: 'horizontal'},
+              {name: "Title of x axis", value: "x_axis_title", isTextAnnotation: true},
+              {name: "Y axis", value: "y_axis", isTextAnnotation: false, orientation: 'vertical'},
+              {name: "Title of y axis", value: "y_axis_title", isTextAnnotation: true},
+              {name: "Text annotation", value: "text_annotation", isTextAnnotation: true}
+            ]
+          },
+          {
+            name: "Linear plot", 
+            value: "linear_plot",
+            parent: "plot"
+          }
+        ];
     var array = annotationServiceController.deleteSubRegionsWhenTypeChanges(newAnnotations, 0, 0);
 
     expect(array[0][0].data.subRegions.length).toEqual(2);
-  });
-
-  it("checkIfChart => false for another", async () => {
-    var annotationServiceController = new AnnotationsControllerService(null);
-    var type = 'TabLe';
-    var result = annotationServiceController.checkIfChart(type);
-    expect(result).toBeFalsy();
-  });
-
-  it("checkIfChart => true for correct", async () => {
-    var annotationServiceController = new AnnotationsControllerService(null);
-    var type = 'CHArt';
-    var result = annotationServiceController.checkIfChart(type);
-    expect(result).toBeTruthy();
-  });
-  
-  it("checkIfTable => false for another", async () => {
-    var annotationServiceController = new AnnotationsControllerService(null);
-    var type = 'PLOt';
-    var result = annotationServiceController.checkIfTable(type);
-    expect(result).toBeFalsy();
-  });
-  
-  it("checkIfTable => true for correct", async () => {
-    var annotationServiceController = new AnnotationsControllerService(null);
-    var type = 'tabLE';
-    var result = annotationServiceController.checkIfTable(type);
-    expect(result).toBeTruthy();
   });
 
   it("copySelectedAnnotations => parent selected: subregions and annotation copied with offset", async () => {

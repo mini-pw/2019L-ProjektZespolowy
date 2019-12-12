@@ -5,6 +5,8 @@ const apiUrl = 'http://annotations.mini.pw.edu.pl/api/annotations'; //'http://lo
 export default class PublicationsService {
   constructor(authService) {
     this.authService = authService;
+    this.types = null;
+    this.tags = null;
   }
 
   get headers() {
@@ -106,5 +108,32 @@ export default class PublicationsService {
       headers: this.headers
     });
     return data.results[0].ocr;
+  }
+
+  async getTypes() {
+    await this.authService.ensureLoggedIn();
+    if(this.types == null){
+      this.types = await fetchBody(`${apiUrl}/publications/object-types`, {
+        headers: this.headers
+      });
+    }
+    
+    return this.types;
+  }
+
+  async getTags() {
+    await this.authService.ensureLoggedIn();
+    if(this.tags == null){
+      this.tags = await fetchBody(`${apiUrl}/publications/annotation-tags`, {
+        headers: this.headers
+      });
+      /*availableTags = [
+          {id: 1, name: "To discuss", value: "to_discuss"},
+          {id: 2, name: "Hard case", value: "hard_case"},
+          {id: 3, name: "Multiple items", value: "multiple_items"}
+        ]; */
+    }
+    
+    return this.tags;
   }
 }

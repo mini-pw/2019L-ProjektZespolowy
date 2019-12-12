@@ -1,12 +1,20 @@
 import {fetchBody} from '../utils';
-import {availableTags, groupBy} from '../common';
+import {groupBy} from '../common';
 
 const apiUrl = 'http://annotations.mini.pw.edu.pl/api/annotations';//'http://localhost:8081/api/annotations';//
 
 export default class AnnotationsService {
-  constructor(authService, annotationsControllerService) {
+  constructor(authService, annotationsControllerService, publicationsService) {
     this.authService = authService;
     this.annotationsControllerService = annotationsControllerService;
+    this.publicationsService = publicationsService;
+    this.getTags();
+    this.tags = null;
+  }
+
+  async getTags(){
+    if(this.tags === null)
+      this.tags = await this.publicationsService.getTags();
   }
 
   get headers() {
@@ -46,9 +54,10 @@ export default class AnnotationsService {
       }),
       headers: this.headers
     });
+    await this.getTags();
     const withTags = list.map(annotation => {
       if (annotation.tags) {
-        annotation.tags = annotation.tags.map(tagValue => availableTags.find(availableTag => availableTag.value === tagValue));
+        annotation.tags = annotation.tags.map(tagValue => this.tags.find(availableTag => availableTag.value === tagValue));
       } else {
         annotation.tags = [];
       }
@@ -62,7 +71,7 @@ export default class AnnotationsService {
     const updatedAnnotations = annotations
       .map((a) => (
         {annotation: a.data, pageId, annotationsUsed: [], tags: a.tags.map(t => t.value)}));
-    if(annotations.length == 0){ //delete all annotations for page
+    if(annotations.length === 0){ //delete all annotations for page
       updatedAnnotations.push({annotation: null, pageId, annotationsUsed: null, tags: null});
     }
     const res = await fetch(`${apiUrl}/annotations/new`, {

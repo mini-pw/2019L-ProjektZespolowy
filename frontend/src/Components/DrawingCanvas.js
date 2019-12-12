@@ -1,10 +1,11 @@
 import React, {Component} from 'react';
 import {Image, Layer, Rect, Text, Transformer} from 'react-konva';
-import {availableTypes, availableSubTypes} from '../common';
 import {Fab} from '@material-ui/core';
 import {Check} from '@material-ui/icons';
 import DeleteIcon from '@material-ui/icons/Delete';
+import {ServiceContext} from '../Services/SeviceContext';
 import Portal from './Portal';
+const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
 
 const getColorByIndex = (ind) => {
   // From https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
@@ -83,10 +84,18 @@ class DrawingCanvas extends Component {
     originalX: 0,
     originalY: 0
   };
+  static contextType = ServiceContext;
+
+  async componentDidMount() {  
+    if(this.props.publicationsService){
+      var types = await this.props.publicationsService.getTypes();
+      this.availableTypes = types;
+    }
+  }
 
   componentDidUpdate(prevProps) {
+    var selected = [];
     if (this.props.annotations !== prevProps.annotations && !this.state.isDragging && this.state.selectedTextAnnotations && this.state.selectedTextAnnotations.length) {
-      var selected = [];
       this.state.selectedTextAnnotationsPrevIndexes.forEach(index => selected.push(this.props.textAnnotations[index]));
       this.setState(
         {
@@ -99,9 +108,8 @@ class DrawingCanvas extends Component {
       var subindex = this.props.selectedAnnotations[0].subRegionIndex;
       var subregion = this.props.annotations[index].subRegions[subindex];
       var indexes = [];
-      var selected = [];
       subregion.subRegions.forEach((el) => {
-        var index = this.props.textAnnotations.findIndex(text => text.x1===el.x1 && text.x2===el.x2 && text.y1===el.y1 && text.y2===el.y2);
+        var index = this.props.textAnnotations.findIndex(text => Math.round(text.x1 * 1000)===Math.round(el.x1 * 1000) && Math.round(text.x2 * 1000)===Math.round(el.x2 * 1000) && Math.round(text.y1 * 1000)===Math.round(el.y1 * 1000) && Math.round(text.y2 * 1000)===Math.round(el.y2 * 1000));
         if(index>-1){
           indexes.push(index);
           selected.push(this.props.textAnnotations[index]);
@@ -146,15 +154,103 @@ class DrawingCanvas extends Component {
   }
 
   formatTypes(types) {
-    var allTypes = availableTypes.concat(availableSubTypes);
-    return types.map(type => allTypes.find(({value}) => value === type).name).join(',');
+    if(!this.availableTypes){
+      this.availableTypes = this.props.publicationsService.types;
+    }
+    var allTypes = this.availableTypes;
+    if(!allTypes)
+      return;
+    this.availableTypes.forEach(type => {
+      if(type.subtypes){
+        allTypes = allTypes.concat(type.subtypes);
+      }
+    });
+    return types.map(type => {
+      var found = allTypes.find(({value}) => value === type);
+      if(found)
+       return found.name;
+      return '';
+    }).join(',');
   }
 
   isTextAnnotation(types) {
-    var type = types.join();
-    if(type.includes('cell') || type.includes('title') || type.includes('text'))
-      return true;
-    return false;
+    if(!this.availableTypes)
+      return false;
+    var isTextAnnotation = null;
+    for(var i=0; i<this.availableTypes.length; i++){
+      var type = this.availableTypes[i];
+      if(type.subtypes){
+        for(var j=0; j<type.subtypes.length; j++){
+          var subtype = type.subtypes[j];
+          if(subtype.value === types[0]){
+            isTextAnnotation = subtype.isTextAnnotation;
+            break;
+          }
+        }
+      }
+      if(isTextAnnotation !== null)
+        break;
+    }
+    return isTextAnnotation;
+  }
+
+  getScaledPointerPosition(stage) {
+    var pointerPosition = stage.getPointerPosition();
+    var stageAttrs = stage.attrs;
+    var x = (pointerPosition.x - stageAttrs.x) / stageAttrs.scaleX;
+    var y = (pointerPosition.y - stageAttrs.y) / stageAttrs.scaleY;
+    return {x: x, y: y};
+  }
+
+  selectTextAnnotationOnClick = (event, x1, x2, y1, y2) => {
+    if (((isMac && !event.metaKey) || (!isMac && !event.ctrlKey)) && !event.shiftKey)
+      this.prevSelected = [];
+    var selected = [];
+    var indexes = [];
+    var firstIndex = null;
+    var secondIndex = null;
+    var i;
+    for(i=0; i<this.props.textAnnotations.length; i++){
+      var el = this.props.textAnnotations[i];
+      if(firstIndex === null && el.x1<x1 && el.x2>x1 && el.y1<y1 && el.y2>y1){
+        firstIndex = i;
+      }
+      if(secondIndex === null && el.x1<x2 && el.x2>x2 && el.y1<y2 && el.y2>y2){
+        secondIndex = i;
+      }
+      if(secondIndex !== null && firstIndex !== null)
+        break;
+    }
+    if(firstIndex === null){
+      var pointerPosition = this.getScaledPointerPosition(this.stage);
+      this.setState({
+        originalX: pointerPosition.x,
+        originalY: pointerPosition.y
+      });
+      return;
+    }
+    if(secondIndex === null || firstIndex === null)
+      return;
+    var minIndex = Math.min(secondIndex, firstIndex);
+    var maxIndex = Math.max(secondIndex, firstIndex);
+    indexes = [];
+    for(i = minIndex; i<=maxIndex; i++)
+      indexes.push(i);
+    if ((isMac && event.metaKey) || (!isMac && event.ctrlKey))
+      indexes = indexes.concat(this.prevSelected.filter((item) => indexes.indexOf(item) < 0));
+    else if(event.shiftKey)
+      indexes = this.prevSelected.filter((item) => indexes.indexOf(item) < 0);
+    selected = [];
+    for(i = 0; i< indexes.length; i++)
+      selected.push(this.props.textAnnotations[indexes[i]]);
+    if(selected){
+      this.setState(
+        {
+          selectedTextAnnotations: selected,
+          selectedTextAnnotationsPrevIndexes: indexes
+        }
+      );
+    }
   }
 
   handleMouseDown = (event) => {
@@ -162,10 +258,19 @@ class DrawingCanvas extends Component {
       return;
     window.addEventListener('mousemove', this.handleMouseMove);
     window.addEventListener('mouseup', this.handleMouseUp);
+    if(!this.prevSelected){
+      this.prevSelected=[];
+    }
     this.stage = event.currentTarget.getStage();
+    var pointerPosition = this.getScaledPointerPosition(this.stage);
+    var x1 = pointerPosition.x;
+    var x2 = x1;
+    var y1 = pointerPosition.y;
+    var y2 = y1;
+    this.selectTextAnnotationOnClick(event.evt, x1, x2, y1, y2);
     this.setState({
-      originalX: this.stage.getPointerPosition().x,
-      originalY: this.stage.getPointerPosition().y,
+      originalX: x1,
+      originalY: y1,
       isDragging: true
     });
   };
@@ -176,36 +281,13 @@ class DrawingCanvas extends Component {
     if (!isDragging || !this.stage.getPointerPosition()) {
       return;
     }
-    var selected;
-    var indexes;
-    var x = this.stage.getPointerPosition().x;
-    var y = this.stage.getPointerPosition().y;
-    for(var i=0; i<this.props.textAnnotations.length; i++){
-      var el = this.props.textAnnotations[i];
-      if(el.x1===0 || el.x2===0 || el.y1===0 || el.y2===0)
-        continue;
-      if(el.x1<x && el.x2>x && el.y1<y && el.y2>y) {
-        var isSelected = this.state.selectedTextAnnotations.indexOf(el) > -1;
-        if(!isSelected && !event.ctrlKey) {
-          selected = this.state.selectedTextAnnotations.concat(el);
-          indexes = this.state.selectedTextAnnotationsPrevIndexes.concat(i);
-        }
-        if(event.ctrlKey && isSelected) {
-          var index = this.state.selectedTextAnnotationsPrevIndexes.indexOf(i);
-          selected = this.state.selectedTextAnnotations.filter((item, j) => index !== j);
-          indexes = this.state.selectedTextAnnotationsPrevIndexes.filter((item, j) => index !== j);
-        }
-        break;
-      }
-    }
-    if(selected){
-      this.setState(
-        {
-          selectedTextAnnotations: selected,
-          selectedTextAnnotationsPrevIndexes: indexes
-        }
-      );
-    }
+    var pointerPosition = this.getScaledPointerPosition(this.stage);
+    var x1, x2, y1, y2;
+    x1 = this.state.originalX;
+    x2 = pointerPosition.x;
+    y1 = this.state.originalY;
+    y2 = pointerPosition.y;
+    this.selectTextAnnotationOnClick(event, x1, x2, y1, y2);
   };
 
   handleMouseUp = () => {
@@ -216,7 +298,7 @@ class DrawingCanvas extends Component {
     }
     window.removeEventListener('mousemove', this.handleMouseMove);
     window.removeEventListener('mouseup', this.handleMouseUp);
-
+    this.prevSelected = this.state.selectedTextAnnotationsPrevIndexes;
     this.setState(
       {
         isDragging: false
