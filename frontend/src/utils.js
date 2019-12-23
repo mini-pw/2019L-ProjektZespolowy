@@ -32,6 +32,5 @@ export const fetchBodyThrowMessage = async (...args) => {
 
 export const windowsCloseEventHandler = (ev) => {
   ev.preventDefault();
-  return ev.returnValue = 'If you will leave the changes will not be saved';
+  return ev.returnValue = 'If you leave now, your changes will not be saved';
 };
-

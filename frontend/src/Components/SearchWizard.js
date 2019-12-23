@@ -125,7 +125,7 @@ const SearchWizard = ({classes, onClose, onSearch, searchParams}) => {
               <Search/>
             </div>
             <InputBase
-              placeholder="Nazwa…"
+              placeholder="Name…"
               classes={{
                 root: classes.inputRoot,
                 input: classes.inputInput
@@ -138,13 +138,13 @@ const SearchWizard = ({classes, onClose, onSearch, searchParams}) => {
           <div className={`${classes.annotatedByMe} ${classes.flexLine}`}>
             <FormControlLabel
               control={<Checkbox checked={params.annotatedByMe} onChange={handleChecked('annotatedByMe')}/>}
-              label="Adnotowane przeze mnie"/>
+              label="Annotated by me"/>
           </div>
           <div className={`${classes.annotatorsCount} ${classes.flexLine}`}>
-            <span>Ilość anotatorów:</span>
+            <span>Annotators count:</span>
             <TextField
               id="standard-number"
-              label="Od"
+              label="From"
               value={params.minAnnotators}
               onChange={handleChange('minAnnotators')}
               type="number"
@@ -156,7 +156,7 @@ const SearchWizard = ({classes, onClose, onSearch, searchParams}) => {
             <span>-</span>
             <TextField
               id="standard-number"
-              label="Do"
+              label="To"
               type="number"
               value={params.maxAnnotators}
               onChange={handleChange('maxAnnotators')}
@@ -167,12 +167,12 @@ const SearchWizard = ({classes, onClose, onSearch, searchParams}) => {
             />
           </div>
           <div className={`${classes.annotationDateFrom} ${classes.flexLine}`}>
-            <span>Data publikacji od:</span>
+            <span>Publication date from:</span>
             <KeyboardDatePicker
               format="dd/MM/yyyy"
               margin="normal"
               id="mui-pickers-date"
-              label="Data"
+              label="Date"
               value={params.publicationPeriod.from}
               onChange={setPubPeriodFrom}
               KeyboardButtonProps={{
@@ -181,12 +181,12 @@ const SearchWizard = ({classes, onClose, onSearch, searchParams}) => {
             />
           </div>
           <div className={`${classes.annotationDateTo} ${classes.flexLine}`}>
-            <span>Data publikacji do:</span>
+            <span>Publication date to:</span>
             <KeyboardDatePicker
               format="dd/MM/yyyy"
               margin="normal"
               id="mui-pickers-date"
-              label="Data"
+              label="Date"
               value={params.publicationPeriod.to}
               onChange={setPubPeriodTo}
               KeyboardButtonProps={{
@@ -205,9 +205,9 @@ const SearchWizard = ({classes, onClose, onSearch, searchParams}) => {
             </Select>
           </div>
           <div className={`${classes.buttons} ${classes.flexLine}`}>
-            <Button onClick={onClose} className={classes.button} variant="contained" color="secondary">Wróć</Button>
+            <Button onClick={onClose} className={classes.button} variant="contained" color="secondary">Back</Button>
             <Button onClick={() => onSearch(formatParams())} className={classes.button} variant="contained"
-                    color="primary">Szukaj</Button>
+                    color="primary">Search</Button>
           </div>
         </div>
       </MuiPickersUtilsProvider>

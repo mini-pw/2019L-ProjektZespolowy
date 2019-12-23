@@ -7,11 +7,11 @@ const headers = {
   "Content-Type": "application/json; charset=utf8"
 };
 
-const NOT_LOGGED_IN_MESSAGE = 'Nie jesteś zalogowany.';
-const BAD_PASSWORD_MESSAGE = 'Zły login lub hasło.';
-const BAD_REGISTRATION_MESSAGE = 'Rejestracja się niepowiodła.';
-const USERNAME_TAKEN_MESSAGE = "Nazwa użytkownika jest zajęta.";
-const BAD_EMAIL_MESSAGE = "Niepoprawny email";
+const NOT_LOGGED_IN_MESSAGE = 'You are not logged-in.';
+const BAD_PASSWORD_MESSAGE = 'Wrong login or password.';
+const BAD_REGISTRATION_MESSAGE = 'New user registration failed.';
+const USERNAME_TAKEN_MESSAGE = 'This username is already taken.';
+const BAD_EMAIL_MESSAGE = 'Incorrect email adress.';
 
 export default class AuthService {
   onUsernameChange = (username) => {};
@@ -56,7 +56,7 @@ export default class AuthService {
       });
 
       await this.logIn(username, password);
-      
+
     } catch (e) {
       if (/A user with that username already exists./.exec(e)) {
         this.messageService.showError(USERNAME_TAKEN_MESSAGE);
