@@ -63,7 +63,7 @@ class PdfPreview extends Component {
         <Paper className={classes.paper} elevation={this.state.elevation}
                onMouseOver={this.onMouseOver}
                onMouseOut={this.onMouseOut}>
-          <img src={src} className={classes.image} alt="Pdf preview"/>
+          <img src={src} className={classes.image} alt="PDF preview"/>
           <div className={classes.title}>
             {name}
           </div>

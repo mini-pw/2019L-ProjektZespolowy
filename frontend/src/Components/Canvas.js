@@ -41,9 +41,9 @@ const MyMenu = ({annotations, onNewAdnotationClick, onConnectAnnotationClick, on
     }
     const getRegionSize = (type, annotationSize, image) => {
       var size = {
-        x1: (annotationSize.x1 + annotationSize.x2)/2, 
-        y1: (annotationSize.y1 + annotationSize.y2)/2, 
-        x2: (annotationSize.x1 + annotationSize.x2)/2 + 50 / image.width, 
+        x1: (annotationSize.x1 + annotationSize.x2)/2,
+        y1: (annotationSize.y1 + annotationSize.y2)/2,
+        x2: (annotationSize.x1 + annotationSize.x2)/2 + 50 / image.width,
         y2: (annotationSize.y1 + annotationSize.y2)/2 + 25 / image.height
       };
       var availableType = subregions.find(el => el.value === type);
@@ -74,13 +74,13 @@ const MyMenu = ({annotations, onNewAdnotationClick, onConnectAnnotationClick, on
     };
     return (
     <Menu id={id}>
-      <Item onClick={onNewAdnotationClick}>Dodaj adnotację</Item>
-      {(selectedAnnotationsCount > 0 && !isText) && <Item onClick={onCopyAnnotationClick}>Kopiuj adnotację</Item>}
-      {(selectedAnnotationsCount === 1 && (subRegionIndex == null || isText)) && <Item onClick={() => onEditAnnotationClick(isText)}>Edytuj adnotację</Item>}
-      {(selectedAnnotationsCount > 0) && <Item onClick={onDeleteAnnotationClick}>Usuń adnotację</Item>}
-      {(selectedAnnotationsCount > 1) && <Item onClick={onConnectAnnotationClick}>Połącz adnotacje</Item>}
-      {(selectedAnnotationsCount === 1 && subregions.length !== 0 && subRegionIndex == null) 
-                                        && <Submenu label='Dodaj podobiekty'>
+      <Item onClick={onNewAdnotationClick}>Add annotation</Item>
+      {(selectedAnnotationsCount > 0 && !isText) && <Item onClick={onCopyAnnotationClick}>Copy annotation</Item>}
+      {(selectedAnnotationsCount === 1 && (subRegionIndex == null || isText)) && <Item onClick={() => onEditAnnotationClick(isText)}>Edit annotation</Item>}
+      {(selectedAnnotationsCount > 0) && <Item onClick={onDeleteAnnotationClick}>Delete annotation</Item>}
+      {(selectedAnnotationsCount > 1) && <Item onClick={onConnectAnnotationClick}>Connect annoations</Item>}
+      {(selectedAnnotationsCount === 1 && subregions.length !== 0 && subRegionIndex == null)
+                                        && <Submenu label='Add subobjects'>
                                             {
                                               subregions.map(el => {
                                                 if(el.isTextAnnotation)
@@ -92,8 +92,8 @@ const MyMenu = ({annotations, onNewAdnotationClick, onConnectAnnotationClick, on
     </Menu>);
   }
 
-function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAnnotationIndex, 
-  annotations, textAnnotations, onAnnotationMove, onAnnotationTransform, selectedAnnotationsIndex, 
+function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAnnotationIndex,
+  annotations, textAnnotations, onAnnotationMove, onAnnotationTransform, selectedAnnotationsIndex,
   showModal, isAnnotationTextMode, isAnnotationTextEditMode, onSaveTextAnnotation, publicationsService}) {
   // const [showZoomHelper, setShowZoomHelper] = useState(false);
   // const {helperService} = useContext(ServiceContext);
@@ -130,9 +130,9 @@ function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAn
 
   const getHelperText = () => {
     if (isMac) {
-      return 'Trzymaj ⌘ i skroluj by zmienić zoom';
+      return 'Hold ⌘ and scroll to zoom';
     }
-    return 'Trzymaj alt i skroluj by zmienić zoom';
+    return 'Hold Alt and scroll to zoom';
   };
 
   return <div>

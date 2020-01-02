@@ -54,7 +54,7 @@ export default function BarWithDrawer({pageTitleLoader, onSearch, searchParams})
               <ListItemIcon style={{marginBottom: '2px'}}>
                 <Apps/>
               </ListItemIcon>
-              <ListItemText primary="Strona główna"/>
+              <ListItemText primary="Main page"/>
             </ListItem>
           </Link>
           <a href='https://docs.google.com/document/d/1DWmx25IrTk-pr7wZl9Rey3qS4z5kFfDldULMfDr7nfA?usp=sharing'
@@ -63,7 +63,7 @@ export default function BarWithDrawer({pageTitleLoader, onSearch, searchParams})
               <ListItemIcon style={{marginBottom: '2px'}}>
                 <Help/>
               </ListItemIcon>
-              <ListItemText primary="Pomoc"/>
+              <ListItemText primary="Help"/>
             </ListItem>
           </a>
         </List>

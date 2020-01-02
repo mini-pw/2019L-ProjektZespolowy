@@ -71,7 +71,7 @@ export default class AnnotationsControllerService {
 
   toggleAnnotationSelection(pageIndex, annotationIndex, subRegionIndex) {
     if (this.isAnnotationSelected(pageIndex, annotationIndex, subRegionIndex)) {
-      this.selectedAnnotations = this.selectedAnnotations.filter((annotation) => 
+      this.selectedAnnotations = this.selectedAnnotations.filter((annotation) =>
       !(annotation.pageIndex === pageIndex && annotation.annotationIndex === annotationIndex && annotation.subRegionIndex === subRegionIndex));
     } else {
       this.selectedAnnotations = [...this.selectedAnnotations, {pageIndex, annotationIndex, subRegionIndex}];
@@ -97,13 +97,13 @@ export default class AnnotationsControllerService {
           let promptType = defaultType;
           let promptText = null;
           let promptTags = [];
-  
+
           let promptChange = function (type, text, tags) {
             promptType = type;
             promptText = text;
             promptTags = tags;
           };
-  
+
           this.create({
             title: 'New annotation',
             content: <Prompt availableTags={availableTags} availableTypes={availableTypes} type={defaultType} text="" tags={[]} onChange={promptChange}/>,
@@ -122,7 +122,7 @@ export default class AnnotationsControllerService {
             }
           });
         });
-  
+
         /** Call the plugin */
         Popup.plugins().prompt(function (type, text, tags) {
           newAnnotation.data.type = type;
@@ -195,7 +195,7 @@ export default class AnnotationsControllerService {
         };
 
         this.create({
-          title: 'Zmień adnotację',
+          title: 'Change annotation',
           content: <Prompt availableTags={availableTags} availableTypes={availableTypes} type={defaultType} text={defaultText} tags={defaultTags} onChange={promptChange}/>,
           buttons: {
             left: ['cancel'],
@@ -257,7 +257,7 @@ export default class AnnotationsControllerService {
 
   copySelectedAnnotations(copyOffset) {
     const updatedAnnotations = _.cloneDeep(this.annotations);
-    this.selectedAnnotations.forEach(({pageIndex, annotationIndex, subRegionIndex}) => 
+    this.selectedAnnotations.forEach(({pageIndex, annotationIndex, subRegionIndex}) =>
     {
       if(subRegionIndex == null) {
         updatedAnnotations[pageIndex].push({
@@ -268,7 +268,7 @@ export default class AnnotationsControllerService {
             x2: updatedAnnotations[pageIndex][annotationIndex].data.x2 + copyOffset,
             y1: updatedAnnotations[pageIndex][annotationIndex].data.y1 + copyOffset,
             y2: updatedAnnotations[pageIndex][annotationIndex].data.y2 + copyOffset,
-            subRegions: updatedAnnotations[pageIndex][annotationIndex].data.subRegions.map(region => 
+            subRegions: updatedAnnotations[pageIndex][annotationIndex].data.subRegions.map(region =>
               {return {...region, x1: region.x1 + copyOffset, x2: region.x2 + copyOffset, y1: region.y1 + copyOffset, y2: region.y2 + copyOffset}})
           }
         });
@@ -309,7 +309,7 @@ export default class AnnotationsControllerService {
     const selectedIds = this.getSelectedAnnotationsIds();
     if (selectedIds.some((id) => !id)) {
       this.messageService.showError(
-        'Musisz opublikować bieżące zmiany przed tym jak dodać referencję między adnotacjami');
+        'You have to save current changes before adding a reference between annotations');
       return;
     }
     this.annotations = this.annotations.map((annotationsOnPage, pageIndex) =>
