@@ -1,13 +1,8 @@
 # ChaTa
-Charts and Tables
+*Charts and tables annotation platform*
 
-Teams meetings - every Friday
+# Description
 
-Janusze AI - Database - 12:15
+The ChaTa platform is envisioned to be a tool to aid research in the fields of automatic chart recognition, classification, data extraction and similar applications. It is designed in such a way that it can be used for a wide range of research projects and may be easily extended if the need arises. Currently it consists of several modules (described in detail in sections below) that facilitate data collection, conducting experiments, automatic document annotation and more.
 
-Placeholder - Extract - 12:45
-
-DDKI - Annotate       - 13:15
-
-Compare -             - 13:45
-
+**[See this project's wiki for more information](https://github.com/mini-pw/2019L-ProjektZespolowy/wiki)**
