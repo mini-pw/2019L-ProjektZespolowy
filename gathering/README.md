@@ -1,9 +1,5 @@
-## Gathering service - API and Scraper
+## Gathering service - API, database and scraper
 
-### How to run backend?
+This is the central module responsible for doing most of the dirty work.
 
-Assuming you have **docker** and **docker-compose** installed on your system, simply run:
-```{bash}
-$ cd backend
-$ docker-compose build && docker-compose up -d
-```
+**[See this module's documentation on the project's wiki](https://github.com/mini-pw/2019L-ProjektZespolowy/wiki/Gathering)**
