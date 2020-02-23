@@ -1,3 +1,8 @@
+# DO NOT USE THIS
+# THIS CODE VIOLATES ARXIV'S RULES OF OBTAINING PAPERS
+# https://arxiv.org/help/robots
+# This code has to be rewritten.
+
 import re
 import scrapy
 from scrapy.crawler import CrawlerProcess
