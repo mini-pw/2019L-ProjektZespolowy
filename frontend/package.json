@@ -13,7 +13,7 @@
     "date-fns": "^2.6.0",
     "jest-react-native": "^18.0.0",
     "konva": "^3.2.4",
-    "lodash": "^4.17.13",
+    "lodash": "^4.17.19",
     "lodash.debounce": "^4.0.8",
     "react": "^16.11.0",
     "react-contexify": "^4.0.2",
