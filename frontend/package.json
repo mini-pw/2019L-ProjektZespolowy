@@ -23,7 +23,7 @@
     "react-paginate": "^6.3.2",
     "react-popup": "^0.10.0",
     "react-router-dom": "^5.0.0",
-    "react-scripts": "2.1.8",
+    "react-scripts": "5.0.1",
     "react-tag-autocomplete": "^6.0.0-beta.1",
     "react-toastify": "^5.1.0",
     "react-tooltip": "^3.10.0",
@@ -59,7 +59,7 @@
     "@babel/plugin-proposal-class-properties": "^7.7.0",
     "enzyme": "^3.10.0",
     "enzyme-adapter-react-16": "^1.15.1",
-    "jest": "23.6.0",
+    "jest": "29.3.1",
     "jest-fetch-mock": "^2.1.2"
   }
 }
